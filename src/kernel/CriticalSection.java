@@ -6,9 +6,9 @@ package kernel;
  * 
  * The critical section problem can be solved simply by 
  * preventing a process from being interrupted while in it's 
- * critical section, and preemptive kernels do not interrupt
+ * critical section, and non-preemptive kernels do not interrupt
  * processes once they are running, so these problems don't 
- * happen in preemptive kernels.
+ * happen in non-preemptive kernels.
  * 
  * Therefore, this code will not be used in the simulation of
  * process synchronization, but is included here to fulfill
