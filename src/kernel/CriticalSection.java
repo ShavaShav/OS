@@ -6,9 +6,9 @@ package kernel;
  * 
  * The critical section problem can be solved simply by 
  * preventing a process from being interrupted while in it's 
- * critical section, and non-preemptive kernels do not interrupt
+ * critical section, and preemptive kernels do not interrupt
  * processes once they are running, so these problems don't 
- * happen in non-preemptive kernels.
+ * happen in preemptive kernels.
  * 
  * Therefore, this code will not be used in the simulation of
  * process synchronization, but is included here to fulfill
@@ -23,12 +23,13 @@ public class CriticalSection implements Runnable{
 	public static final int PROCESS_B = 1;
 	
 	// Using Peterson's solution to the critical section problem
-	private static boolean flag[] = {false, false};
+	private static boolean flag[] = { false, false };
 	private static volatile int turn;
+	
 	private static int sharedResource = 0;
 	
 	private int csId; 			// process number 0 or 1
-	private long timeInsideCS;	// amount of time spent inside of critical section
+	private long timeInsideCS = 1;	// amount of time spent inside of critical section
 	
 	// construct a process with a critical section
 	public CriticalSection(int csId){ this.csId = csId; }

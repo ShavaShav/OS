@@ -19,7 +19,7 @@ public class Process {
 	private int state;				// current state (see State.java)
 	private boolean highPriority;   // true if a high priority, false if low priority
 	private int totalTicks;
-	private int ticksRemaining;		// total running time of process (time it takes IP to reach end of instructions)
+	private int ticksRemaining;		// total running CPU time of process (time it takes IP to reach end of instructions)
 	private int cpuBurst;			// average # of cpu ticks before interrupt
 	// Program info
 	private int size = 24;	// kb process takes in memory (init to size of process control block = 6 * kbsizeof(int))
@@ -52,7 +52,17 @@ public class Process {
 	public int getState() { return state; }
 	public int getSize() { return size; } 
 	private String getCPUTimeRemaining(){ return String.format("%.2f", ((double)ticksRemaining/CPU.CLOCK_SPEED)); }
-	public String toString() { return "PID: "+pid+" ("+getCPUTimeRemaining()+" secs left)"; }
+	public String toString() { 
+		return "PID: "+pid+" ("+
+				getCPUTimeRemaining()+" secs left)"; 
+	}
+	
+	public String fullDetails(){
+		return "PID: "+pid+
+				"\tTicks: " + ticksRemaining + "/" + totalTicks + 
+				"\t" + size + "kb\t" +
+				"\t" + (highPriority ? "High" : "Low") + " priority";
+	}
 	
 	// simulates resource requested from process while in CPU
 	public Resource getRequestedResource(){
@@ -62,7 +72,7 @@ public class Process {
 	// simulate the instruction pointer register advancing towards the end
 	public int advanceIP() { 
 		// to simulate interrupts at different times, adding a bit of randomness to each cpu burst time inteval
-		double randomBurst = (int) (random.nextGaussian() * (cpuBurst/5) + cpuBurst);
+		double randomBurst = random.nextGaussian() * (cpuBurst/5) + cpuBurst;
 		int randomTicks = (int) Math.round(randomBurst);
 		ticksRemaining -= randomTicks;
 		if (ticksRemaining < 0) ticksRemaining = 0;

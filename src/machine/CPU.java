@@ -7,8 +7,8 @@ import java.util.concurrent.Executors;
 import kernel.Process;
 
 // CPU is static
-public class CPU extends Observable {
-	public static final int CLOCK_SPEED = 500; // 500 ticks per second
+public class CPU extends Observable implements Runnable {
+	public static final int CLOCK_SPEED = 1000; // 500 ticks per second
 	
 	private static final CPU instance = new CPU();
 	private static Executor core = Executors.newSingleThreadExecutor();
@@ -39,18 +39,11 @@ public class CPU extends Observable {
 	// run current process on the CPU (in a separate thread)
 	// using's Executor's single thread service to ensure CPU cannot
 	// call execute more than once simultaneously (a.k.a 1 core)
+	@Override
 	public void run() {
-		core.execute(new Runnable() { 
-			public void run() { 
-				doWork();
-			} 
-		});
-	}
-	
-	// simulate working for the CPU - burst time by sleeping
-	// for the amount of cpuBurst ticks (advanceIP) divided
-	/// by the clock speed multiplied by 1000 ( milliseconds in a sec)
-	private void doWork() {
+		// simulate working for the CPU - burst time by sleeping
+		// for the amount of cpuBurst ticks (advanceIP) divided
+		/// by the clock speed multiplied by 1000 ( milliseconds in a sec)
 		try {
 			Thread.sleep((currentProcess.advanceIP()/CLOCK_SPEED) * 1000);
 			// simulate an i/o or syscall - return control to kernel
@@ -60,4 +53,5 @@ public class CPU extends Observable {
 			e.printStackTrace();
 		}
 	}
+
 }

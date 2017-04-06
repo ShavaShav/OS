@@ -3,7 +3,7 @@ package machine;
 import kernel.Process;
 
 public class RAM {
-	public static final int STACK_SIZE = 4096; // 4 MB
+
 	public static final int CAPACITY = 4194304; // 4GB
 	private static int currentUsage = 0; 		// amount of memory in use
 	
@@ -11,7 +11,7 @@ public class RAM {
 		currentUsage += process.getSize();
 	}
 	
-	public static void deleteProcess(Process process) {
+	public static void unloadProcess(Process process) {
 		currentUsage -= process.getSize();
 	}
 	

@@ -1,15 +1,27 @@
 package machine;
 
-import structures.IODevice;
+import structures.ProcessQueue;
+import structures.Resource;
+import structures.Schedule;
 
-public class Monitor extends IODevice{
+public class Monitor extends Resource {
 	// STDOUT should only have one instance available
-	private static Monitor instance = new Monitor();
+	private static final Monitor instance = new Monitor();
+	public static Monitor getInstance(){ return instance; }
+
+	private Monitor(){
+		super();
+		queue = new ProcessQueue(Schedule.FCFS); // first come first serve
+		speed = FAST_SPEED; // we are taking monitor output to be the fastest i/o device
+	}
 	
-	private Monitor(){}; // disallow constuction
+	@Override
+	public String getName() {
+		return "Monitor";
+	}
 	
-	// gets STDOUT
-	public IODevice getInstance(){
-		return instance;
+	@Override
+	public String toString(){
+		return id + ": Monitor ("+ queue.size() + " processes in queue)";
 	}
 }

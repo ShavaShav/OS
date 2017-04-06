@@ -1,6 +1,7 @@
 package sim;
 
 import kernel.ShortTermScheduler;
+import machine.DiskDrive;
 
 public class SimulationUI {
 	public static final boolean DETAILS = true;
