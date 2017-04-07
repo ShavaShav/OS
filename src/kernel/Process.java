@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import machine.CPU;
-import structures.Resource;
+import structures.IODevice;
 import structures.State;
 
 /*
@@ -23,24 +23,23 @@ public class Process {
 	private int cpuBurst;			// average # of cpu ticks before interrupt
 	// Program info
 	private int size = 24;	// kb process takes in memory (init to size of process control block = 6 * kbsizeof(int))
-	private ArrayList<Resource> resourceList; // list of resources that are used by job
+	private ArrayList<IODevice> resourceList; // list of resources that are used by job
 		
 	// A pseudo-process with job header to be constructed by short-term scheduler
-	public Process (int size, boolean highPriority, int cpuBurst, int totalTicks){
+	public Process (int size, boolean highPriority, int cpuBurst, int totalTicks, ArrayList<IODevice> resourceList){
 		pid = numProcesses++; // increment for next process
 		this.highPriority = highPriority;
 		this.totalTicks = totalTicks;
 		this.ticksRemaining = totalTicks;	// time remaining is the total time at process birth
 		this.cpuBurst = cpuBurst;
 		this.size += (size + STACK_SIZE); // size includes stack size
+		this.resourceList = resourceList;
 		state = State.NEW; // new state
-		
-		resourceList = new ArrayList<Resource>();
 		random = new Random();
 	}
 	
 	// setters
-	public void addResource(Resource resource){ resourceList.add(resource); }
+	public void addResource(IODevice resource){ resourceList.add(resource); }
 	public void setState(int state) { this.state = state; }
 	public void setPriority(boolean highPriority) { this.highPriority = highPriority; }
 	
@@ -51,6 +50,7 @@ public class Process {
 	public int getTotalTicks() { return totalTicks; }
 	public int getState() { return state; }
 	public int getSize() { return size; } 
+	public ArrayList<IODevice> getResources() { return resourceList; } 
 	private String getCPUTimeRemaining(){ return String.format("%.2f", ((double)ticksRemaining/CPU.CLOCK_SPEED)); }
 	public String toString() { 
 		return "PID: "+pid+" ("+
@@ -64,9 +64,11 @@ public class Process {
 				"\t" + (highPriority ? "High" : "Low") + " priority";
 	}
 	
-	// simulates resource requested from process while in CPU
-	public Resource getRequestedResource(){
-		return null;
+	// simulates a resource request (syscall) from process while in CPU
+	// by picking one of it's resources randomly (scheduler will move it to io)
+	public IODevice resourceRequest(){
+		int randResource = random.nextInt(resourceList.size());
+		return resourceList.get(randResource);
 	}
 	
 	// simulate the instruction pointer register advancing towards the end

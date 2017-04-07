@@ -1,5 +1,6 @@
 package structures;
 
+import java.util.Observable;
 import java.util.Random;
 
 import kernel.Process;
@@ -7,36 +8,48 @@ import kernel.Process;
 // resources can only be used by one process at a time, so subclasses
 // will all follow the Singleton pattern. They will also run in separate
 // threads so the scheduler can communicate with them asynchronously.
-// Each resource will take operate at a certain speed.
-public abstract class Resource implements Runnable {
-	protected static double FAST_SPEED = 1; // seconds it takes to complete request
-	protected static double MEDIUM_SPEED = 2;
-	protected static double SLOW_SPEED = 7;
+// Each resource will take operate at a certain speed. The use of Java's
+// BlockingQueue interface allows for race-free addition and removal from waiting queues
+public class IODevice extends Observable implements Runnable {
+	public static double FAST_SPEED = 1; // seconds it takes to complete request
+	public static double MEDIUM_SPEED = 2;
+	public static double SLOW_SPEED = 7;
 	private static int numResources = 0;
 	private Random random;
 	
-	protected ProcessQueue queue;	// processes in line to use resource
+	protected ProcessQueue queue;	// processes in line to use resource -> I/O Waiting queue
+	
 	protected int id;				// id of resource
+	protected String name;			// human-readable name of device
 	protected double speed;			// time it takes to fulfill request (seconds)
 	
-	public Resource(){
-		id = numResources++;
+	// constructor to be used by subclasses (specific I/o devices)
+	protected IODevice(){
+		id = numResources++;	// give every IODevice the next ID
 		speed = MEDIUM_SPEED; 	// medium second by default
+		name = "IODevice";		// default name
 		random = new Random();
+		queue = new ProcessQueue(Schedule.FCFS); // first come first serve for ALL I/O devices
 	}
 	
-	public abstract String getName();
-	public int getId(){ return id; }
+	// can use this generically to make any device
+	public IODevice(String name, double speed){
+		this();
+		this.name = name;
+		this.speed = speed;
+	}
+	
+	public String getName() { return name; }
+	public int getId() { return id; }
 	
 	// returns true if there are processes in queue
-	public boolean hasQueuedProcesses(){ return queue.hasNext(); }
+	public boolean hasQueuedProcesses() { return queue.hasNext(); }
 	
 	// number of processes in the queue
 	public int numQueuedProcesses() { return queue.size(); }
 	
 	// add a process to the queue
 	public void addToQueue(Process process) throws InterruptedException{
-		System.out.println("adding");
 		queue.add(process);
 	}
 	
@@ -48,7 +61,7 @@ public abstract class Resource implements Runnable {
 	}
 	
 	// gets the next random time close to the speed, used by
-	private double getRandomTime(double speed){
+	private double getRandomTime(double speed) {
 		double time = random.nextGaussian() * (speed/8) + speed;
 		return time > 0.00 ? time : 0.00;
 	}
@@ -61,11 +74,18 @@ public abstract class Resource implements Runnable {
 			try {
 				// get the next process (might take a while)
 				Process doneIO = getNextCompletedProcess();
-				System.out.println(this + " -> Finished " + doneIO + "\n");
+				// pass the completed process back to the scheduler
+				setChanged();
+				notifyObservers(doneIO);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return id + ": " + getName() + " ("+ queue.size() + " processes in queue)";
 	}
 }

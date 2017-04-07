@@ -3,37 +3,45 @@ package sim;
 import java.util.Scanner;
 
 import kernel.Process;
-import machine.DiskDrive;
+import machine.Config;
+import machine.HardDiskDrive;
 import machine.Keyboard;
-import machine.Monitor;
+import structures.IODevice;
 
 public class ResourceSim {
 	
 	public static void main(String []args){
-		DiskDrive hdd = DiskDrive.getInstance();
+		HardDiskDrive hdd = HardDiskDrive.getInstance();
 		Keyboard stdin = Keyboard.getInstance();
-		Monitor stdout = Monitor.getInstance();
+		IODevice usb = new IODevice("USB Drive", IODevice.MEDIUM_SPEED);
+		
 		
 		new Thread(hdd).start();
 		new Thread(stdin).start();
-		new Thread(stdout).start();
+		new Thread(usb).start();
 		
 		Scanner sc = new Scanner(System.in);
-		System.out.println("Press key to insert new process into 1) HDD, 2) Keyboard, 3) Monitor:");
+		System.out.println("Press key to insert new process into 0) HDD, 1) Keyboard, 2) USB:");
 		while (true){
 			int option = sc.nextInt();
-			Process p = new Process((int) (Math.random() * 100), false, (int) (Math.random() * 550), (int)(Math.random() * 100000));
+			Process p = new Process(
+					(int) (Math.random() * 100),    // KB size 
+					false,							// High Priority?
+					(int) (Math.random() * 550),    // Average CPU Burst ticks (before interrupt)
+					(int)(Math.random() * 100000),  // Estimated total CPU ticks to complete process
+					Config.getRandomResources()		// Resources that process needs over lifetime
+				);
 			System.out.println("Adding " + p);
 			try {
 				switch (option){
-				case 1:
+				case 0:
 					hdd.addToQueue(p);
 					break;
-				case 2:
+				case 1:
 					stdin.addToQueue(p);
 					break;
-				case 3:
-					stdout.addToQueue(p);
+				case 2:
+					usb.addToQueue(p);
 					break;
 				}
 			} catch (InterruptedException e) {
