@@ -73,7 +73,7 @@ public class CPUScheduler {
 	// move a process to it's requested IO queue (invoked on interrupt)
 	private void moveToIOQueue(Process process){
 		IODevice device = process.resourceRequest(); // get the processes request resource
-		System.out.println("Moving PID " + process.getPID() + " to "+device.getName()+"'s Queue");
+		System.out.println("\n==> Moving PID " + process.getPID() + " to "+device.getName()+"'s Queue");
 		try {
 			device.addToQueue(process);				// add it to resource's IO queue
 		} catch (InterruptedException e) {
@@ -94,7 +94,7 @@ public class CPUScheduler {
 			
 			// interrupt received, get from CPU and context switch
 			Process process = cpu.deallocate();
-			System.out.println("Switching out: " + process);
+			System.out.println("<-> Switching out: " + process);
 			process.setState(State.WAITING);
 			
 			// if process was completed by CPU, terminate it
@@ -102,6 +102,7 @@ public class CPUScheduler {
 				RAM.unloadProcess(process);			// deallocate memory taken by process
 				process.setState(State.TERMINATED);	// set state to TERMINATED
 				completedProcesses.add(process);	// adding to pile of completed process (WOULDN"T EXIST IN A REAL COMPUTER)
+				System.out.println("\n*** PID " + process.getPID() + " is terminating! ***");
 			}
 			
 			// move process to IO queue if it's in a WAITING state
@@ -113,7 +114,7 @@ public class CPUScheduler {
 			// get the next process from ready queue and assign it to the CPU
 			try {
 				Process nextProcess = readyQueue.next();
-				System.out.println("\nSwitching in: " + nextProcess);
+				System.out.println("\n<-> Switching in: " + nextProcess);
 				
 				nextProcess.setState(State.RUNNING);
 				cpu.allocate(nextProcess);
@@ -129,7 +130,7 @@ public class CPUScheduler {
 		@Override
 		public void update(Observable obs, Object o) {
 			if (! (obs instanceof IODevice)) {
-				System.err.println("CPUObserver malfunction in CPUScheduler.");
+				System.err.println("ResourceObserver malfunction in CPUScheduler.");
 				return;
 			}
 			IODevice device = (IODevice) obs; // get the device that sent notification
@@ -137,7 +138,7 @@ public class CPUScheduler {
 			// device will send a process with update when it completes it
 			if (o instanceof Process){
 				Process doneIO = (Process) o; // get process that device sent with notify
-				System.out.println(device.getName() + " finished IO for PID " + doneIO.getPID());
+				System.out.println("\n(() " + device.getName() + " finished IO for PID " + doneIO.getPID());
 				doneIO.setState(State.READY); // put process in READY state
 				try {
 					readyQueue.add(doneIO);

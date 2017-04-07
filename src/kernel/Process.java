@@ -36,6 +36,9 @@ public class Process {
 		this.resourceList = resourceList;
 		state = State.NEW; // new state
 		random = new Random();
+		
+		if (resourceList.isEmpty())
+			cpuBurst = totalTicks;	// no resources means cpuBurst time should be equal to the total time
 	}
 	
 	// setters
@@ -68,16 +71,23 @@ public class Process {
 	// by picking one of it's resources randomly (scheduler will move it to io)
 	public IODevice resourceRequest(){
 		int randResource = random.nextInt(resourceList.size());
-		return resourceList.get(randResource);
+		return resourceList.get(randResource);				
 	}
 	
 	// simulate the instruction pointer register advancing towards the end
 	public int advanceIP() { 
-		// to simulate interrupts at different times, adding a bit of randomness to each cpu burst time inteval
-		double randomBurst = random.nextGaussian() * (cpuBurst/5) + cpuBurst;
-		int randomTicks = (int) Math.round(randomBurst);
-		ticksRemaining -= randomTicks;
-		if (ticksRemaining < 0) ticksRemaining = 0;
-		return randomTicks;
+		if (resourceList.isEmpty()){ // no resource requests, so IP should advance all the way to end
+			System.out.println("No resources, bursting to the end!");
+			cpuBurst = ticksRemaining;
+			ticksRemaining = 0;
+			return cpuBurst; // returning the ticks remaining as one cpu burst
+		} else {
+			// to simulate interrupts at different times, adding a bit of randomness to each cpu burst time inteval
+			double randomBurst = random.nextGaussian() * (cpuBurst/5) + cpuBurst;
+			int randomTicks = (int) Math.round(randomBurst);
+			ticksRemaining -= randomTicks;
+			if (ticksRemaining < 0) ticksRemaining = 0;
+			return randomTicks;			
+		}
 	}
 }

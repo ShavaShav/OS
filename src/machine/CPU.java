@@ -8,7 +8,7 @@ import kernel.Process;
 
 // CPU is static
 public class CPU extends Observable {
-	public static final int CLOCK_SPEED = 1000; // 500 ticks per second
+	public static final int CLOCK_SPEED = 1000; // 1000 ticks per second
 	
 	private static final CPU instance = new CPU();
 	private static Executor core = Executors.newSingleThreadExecutor();
