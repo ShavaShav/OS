@@ -10,13 +10,13 @@ import kernel.Process;
 // threads so the scheduler can communicate with them asynchronously.
 // Each resource will take operate at a certain speed. The use of Java's
 // BlockingQueue interface allows for race-free addition and removal from waiting queues
-public class IODevice extends Observable implements Runnable {
-	public static double FAST_SPEED = 1; // seconds it takes to complete request
-	public static double MEDIUM_SPEED = 2;
-	public static double SLOW_SPEED = 7;
+public abstract class IODevice extends Observable implements Runnable {
+	public static double FAST_SPEED = 1000; // ticks it takes to complete request
+	public static double MEDIUM_SPEED = 2000;
+	public static double SLOW_SPEED = 7000;
 	private static int numResources = 0;
 	private Random random;
-	
+	private boolean isRunning = false;
 	protected ProcessQueue queue;	// processes in line to use resource -> I/O Waiting queue
 	
 	protected int id;				// id of resource
@@ -56,7 +56,8 @@ public class IODevice extends Observable implements Runnable {
 	// gets the next process after it's request has been completed (simulated
 	// by sleeping) - The queue blocks if empty
 	public Process getNextCompletedProcess() throws InterruptedException{
-		Thread.sleep((long) (getRandomTime(speed) * 1000));
+		long randTime = (long) (getRandomTime(speed));
+		Thread.sleep((long) (randTime));
 		return queue.next();
 	}
 	
@@ -69,11 +70,14 @@ public class IODevice extends Observable implements Runnable {
 	// runs in a separate thread due to busy waits
 	@Override
 	public void run() {
+		isRunning = true;
 		// run until program is aborted
 		while (true){
 			try {
 				// get the next process (might take a while)
 				Process doneIO = getNextCompletedProcess();
+				if (!isRunning)
+					return;
 				// pass the completed process back to the scheduler
 				setChanged();
 				notifyObservers(doneIO);
@@ -84,8 +88,16 @@ public class IODevice extends Observable implements Runnable {
 		}
 	}
 	
+	public ProcessQueue getQueue(){
+		return queue;
+	}
+	
 	@Override
 	public String toString() {
 		return id + ": " + getName() + " ("+ queue.size() + " processes in queue)";
+	}
+	
+	public void reset(){
+		queue.clear();
 	}
 }

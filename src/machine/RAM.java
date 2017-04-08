@@ -4,7 +4,7 @@ import kernel.Process;
 
 public class RAM {
 
-	public static final int CAPACITY = 4194304; // 4GB
+	public static int CAPACITY = 4194304; // 4GB
 	private static int currentUsage = 0; 		// amount of memory in use
 	
 	public static void loadProcess(Process process) {

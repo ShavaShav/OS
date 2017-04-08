@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import machine.CPU;
+import machine.Config;
 import structures.IODevice;
 import structures.State;
 
@@ -12,6 +13,7 @@ import structures.State;
  */
 public class Process {
 	private static final int STACK_SIZE = 4096; // 4 MB
+	private static final int MAX_BURST_SECS = 4; // max tim spent bursting in cpu before interupt
 	private static int numProcesses = 0;	// init = 0 (first process) incremented on every new proc
 	private Random random;
 	// Process Control Block
@@ -20,31 +22,27 @@ public class Process {
 	private boolean highPriority;   // true if a high priority, false if low priority
 	private int totalTicks;
 	private int ticksRemaining;		// total running CPU time of process (time it takes IP to reach end of instructions)
-	private int cpuBurst;			// average # of cpu ticks before interrupt
 	// Program info
 	private int size = 24;	// kb process takes in memory (init to size of process control block = 6 * kbsizeof(int))
 	private ArrayList<IODevice> resourceList; // list of resources that are used by job
 		
 	// A pseudo-process with job header to be constructed by short-term scheduler
-	public Process (int size, boolean highPriority, int cpuBurst, int totalTicks, ArrayList<IODevice> resourceList){
+	public Process (int size, boolean highPriority, int totalTicks, ArrayList<IODevice> resourceList){
 		pid = numProcesses++; // increment for next process
 		this.highPriority = highPriority;
 		this.totalTicks = totalTicks;
 		this.ticksRemaining = totalTicks;	// time remaining is the total time at process birth
-		this.cpuBurst = cpuBurst;
 		this.size += (size + STACK_SIZE); // size includes stack size
 		this.resourceList = resourceList;
 		state = State.NEW; // new state
 		random = new Random();
-		
-		if (resourceList.isEmpty())
-			cpuBurst = totalTicks;	// no resources means cpuBurst time should be equal to the total time
 	}
 	
 	// setters
 	public void addResource(IODevice resource){ resourceList.add(resource); }
 	public void setState(int state) { this.state = state; }
 	public void setPriority(boolean highPriority) { this.highPriority = highPriority; }
+	public static void resetProcessCount(){ numProcesses = 0; }
 	
 	// getters
 	public int getPID() { return pid; }
@@ -53,12 +51,10 @@ public class Process {
 	public int getTotalTicks() { return totalTicks; }
 	public int getState() { return state; }
 	public int getSize() { return size; } 
+	public int getPercentageDone() { return (int) Math.round(((totalTicks-ticksRemaining)/(double)totalTicks) * 100); }
 	public ArrayList<IODevice> getResources() { return resourceList; } 
 	private String getCPUTimeRemaining(){ return String.format("%.2f", ((double)ticksRemaining/CPU.CLOCK_SPEED)); }
-	public String toString() { 
-		return "PID: "+pid+" ("+
-				getCPUTimeRemaining()+" secs left)"; 
-	}
+	public String toString() { return "PID: "+pid+" ("+size+" kb)"; }
 	
 	public String fullDetails(){
 		return "PID: "+pid+
@@ -78,15 +74,17 @@ public class Process {
 	public int advanceIP() { 
 		if (resourceList.isEmpty()){ // no resource requests, so IP should advance all the way to end
 			System.out.println("No resources, bursting to the end!");
-			cpuBurst = ticksRemaining;
+			int cpuBurst = ticksRemaining;
 			ticksRemaining = 0;
 			return cpuBurst; // returning the ticks remaining as one cpu burst
 		} else {
 			// to simulate interrupts at different times, adding a bit of randomness to each cpu burst time inteval
-			double randomBurst = random.nextGaussian() * (cpuBurst/5) + cpuBurst;
-			int randomTicks = (int) Math.round(randomBurst);
+			int randomTicks = random.nextInt(CPU.CLOCK_SPEED * MAX_BURST_SECS); // have them spend less than a second in CPU fro demo purposes
 			ticksRemaining -= randomTicks;
-			if (ticksRemaining < 0) ticksRemaining = 0;
+			if (ticksRemaining < 0) {
+				randomTicks -= ticksRemaining;
+				ticksRemaining = 0;
+			}
 			return randomTicks;			
 		}
 	}

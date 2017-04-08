@@ -2,22 +2,23 @@ package machine;
 
 import java.util.Observable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import kernel.Process;
 
 // CPU is static
 public class CPU extends Observable {
-	public static final int CLOCK_SPEED = 1000; // 1000 ticks per second
+	public static int CLOCK_SPEED = 8000000; // 1000 ticks per second
 	
 	private static final CPU instance = new CPU();
-	private static Executor core = Executors.newSingleThreadExecutor();
+	private static ExecutorService core = Executors.newSingleThreadExecutor();
 	private static Process currentProcess;
 	
 	// only allow one CPU to be instantiated
 	private CPU(){};	
 	public static CPU getInstance(){ return instance; }
-
+	
 	// notify kernel to deallocate the CPU, 
 	// I/O interrupt or other system call
 	private void interrupt(){
@@ -46,6 +47,7 @@ public class CPU extends Observable {
  	// using's Executor's single thread service to ensure CPU cannot
  	// call execute more than once simultaneously (a.k.a 1 core)
  	public void run() {
+		System.out.println("[#] CPU processing PID " + currentProcess.getPID() + "...");
  		core.execute(new Runnable() { 
  			public void run() { 
  				doWork();

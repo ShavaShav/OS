@@ -1,11 +1,13 @@
 package kernel;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
 
 import structures.IODevice;
 import structures.ProcessQueue;
+import structures.Schedule;
 import structures.State;
 import machine.CPU;
 import machine.Config;
@@ -15,21 +17,26 @@ import machine.RAM;
 // and schedules them to the CPU. 
 // Our implementation is event driven, adding and removing processes from
 // the different queues based on interrupt events from the CPU and IO devices
-public class CPUScheduler {
+// Observable by the view, the sim window
+public class CPUScheduler extends Observable{
 	private CPU cpu;
 	private ProcessQueue readyQueue;	// ready queue holds process that are in the READY state.
-	private int numResources = 0;
 	private ArrayList<Process> completedProcesses; // will hold the completed processes (for now.. might not need/want too)
-
+	private boolean isRunning;
+	
 	public CPUScheduler(int schedule, ArrayList<Process> initialProcesses){
-
+		isRunning = false;
+		
 		// access CPU, watch it's activities so can deallocate on interrupt
 		cpu = CPU.getInstance();
+		cpu.deleteObservers();
 		cpu.addObserver(new CPUObserver());
 		
 		// access the system's resources, listen for IO completions
-		for (IODevice resource : Config.resources)
+		for (IODevice resource : Config.RESOURCES) {
+			resource.deleteObservers();
 			resource.addObserver(new ResourceObserver());
+		}
 		
 		// initialize ready queue according to schedule
 		readyQueue = new ProcessQueue(schedule);
@@ -40,6 +47,11 @@ public class CPUScheduler {
 		
 		completedProcesses = new ArrayList<Process>();
 	}
+
+	public ProcessQueue getReadyQueue(){ return readyQueue; }
+	
+	// true if the scheduler is currently running
+	public boolean isRunning(){ return isRunning; }
 	
 	// get the schedule that the scheduler is using for it's ready queue
 	public int getSchedule() { return readyQueue.getSchedule(); }
@@ -56,13 +68,19 @@ public class CPUScheduler {
 		}
 	}
 	
+	
 	// begin the scheduling algorithm, it won't start until this is called!
 	public void start(){	
-		// allocate initial process and give to CPU - 500 burst ticks, 6000 total
+		if (readyQueue.isEmpty())
+			return;
+
+		// allocate initial process and give to CPU
 		Process process;
 		try {
+			isRunning = true;
 			process = readyQueue.next(); // get the first process from readyqueue
 			process.setState(State.RUNNING); // set state to RUNNING
+			System.out.println("<-> Switching in: " + process);
 			cpu.allocate(process); // allocate CPU, will get update when it's done
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -148,6 +166,11 @@ public class CPUScheduler {
 				}
 			}
 		}	
+	}
+
+	// can change the schedule on the fly using this method, replaces ready queue with new one
+	public void setSchedule(int schedule) {
+		readyQueue.setSchedule(schedule);
 	}
 	
 }
