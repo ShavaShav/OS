@@ -60,6 +60,7 @@ public class SimController {
 				// start the scheduling algorithm
 				scheduler.start();
 			}
+			simPanel.updateDiagnostics();
 		}
 	}
 	

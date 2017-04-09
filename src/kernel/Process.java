@@ -13,7 +13,7 @@ import structures.State;
  */
 public class Process {
 	private static final int STACK_SIZE = 4096; // 4 MB
-	private static final int MAX_BURST_SECS = 4; // max tim spent bursting in cpu before interupt
+	private static final int MAX_BURST_SECS = 2; // max tim spent bursting in cpu before interupt
 	private static int numProcesses = 0;	// init = 0 (first process) incremented on every new proc
 	private Random random;
 	// Process Control Block
@@ -68,6 +68,28 @@ public class Process {
 	public IODevice resourceRequest(){
 		int randResource = random.nextInt(resourceList.size());
 		return resourceList.get(randResource);				
+	}
+	
+	// get number of ticks that Process should burst for current CPU usage
+	public int getRandomBurst(){
+		if (resourceList.isEmpty()){ // no resource requests, so IP should advance all the way to end
+			System.out.println("No resources, bursting to the end!");
+			return ticksRemaining;
+		} else {
+			// to simulate interrupts at different times, adding a bit of randomness to each cpu burst time inteval
+			return random.nextInt(CPU.CLOCK_SPEED * MAX_BURST_SECS); // have them spend less than a second in CPU fro demo purposes
+		
+		}
+	}
+	
+	// advance the process a number of ticks, return s number of ticks advanced
+	public int advanceIP(int ticks){
+		ticksRemaining -= ticks;
+		if (ticksRemaining < 0) {
+			ticks += ticksRemaining;
+			ticksRemaining = 0;
+		}
+		return ticks;
 	}
 	
 	// simulate the instruction pointer register advancing towards the end

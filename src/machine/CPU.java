@@ -9,11 +9,20 @@ import kernel.Process;
 
 // CPU is static
 public class CPU extends Observable {
-	public static int CLOCK_SPEED = 8000000; // 1000 ticks per second
+	public static int CLOCK_SPEED = 1000; // 1000 ticks per second
 	
 	private static final CPU instance = new CPU();
 	private static ExecutorService core = Executors.newSingleThreadExecutor();
 	private static Process currentProcess;
+	
+	public ProcessObservable processObservable = new ProcessObservable();
+	
+	private class ProcessObservable extends Observable {
+		public void changeAndNotify(){
+			this.setChanged();
+			this.notifyObservers();
+		}
+	};
 	
 	// only allow one CPU to be instantiated
 	private CPU(){};	
@@ -29,6 +38,7 @@ public class CPU extends Observable {
 	// load and run a process on the cpu
 	public void allocate(Process process){
 		currentProcess = process;
+		processObservable.changeAndNotify();
 		this.run();
 	}
 	
@@ -36,6 +46,7 @@ public class CPU extends Observable {
 	public Process deallocate(){
 		Process interruptedProcess = currentProcess;
 		currentProcess = null;
+		processObservable.changeAndNotify();
 		return interruptedProcess;
 	}
 	
@@ -60,7 +71,13 @@ public class CPU extends Observable {
  	/// by the clock speed multiplied by 1000 ( milliseconds in a sec)
  	private void doWork() {
  		try {
- 			Thread.sleep((currentProcess.advanceIP()/CLOCK_SPEED) * 1000);
+ 			int randomBurst = currentProcess.getRandomBurst();
+ 			do {
+ 				currentProcess.advanceIP(CLOCK_SPEED/2); // advance half a second
+ 				randomBurst -= CLOCK_SPEED/2;
+ 				Thread.sleep(CLOCK_SPEED/2); 	
+ 				System.out.println(randomBurst);
+ 			} while (randomBurst > 0);
  			// simulate an i/o or syscall - return control to kernel
  			this.interrupt();
  		} catch (InterruptedException e) {
@@ -69,4 +86,7 @@ public class CPU extends Observable {
  		}
 	 }
 
+ 	public Observable getProcessObservable(){
+ 		return processObservable;
+ 	}
 }

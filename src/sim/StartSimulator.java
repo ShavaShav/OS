@@ -3,6 +3,8 @@ package sim;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 
+import javax.swing.JFrame;
+
 import kernel.CPUScheduler;
 import kernel.Process;
 
@@ -17,6 +19,7 @@ public class StartSimulator {
 					CPUScheduler model = new CPUScheduler(0, new ArrayList<Process>());
 					SimWindow view = new SimWindow(model);
 					SimController controller = new SimController(view, model);
+					view.setExtendedState(JFrame.MAXIMIZED_BOTH); // full screen
 					view.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();

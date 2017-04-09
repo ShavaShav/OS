@@ -119,7 +119,8 @@ public class CPUScheduler extends Observable{
 			if (process.getTicksRemaining() <= 0){
 				RAM.unloadProcess(process);			// deallocate memory taken by process
 				process.setState(State.TERMINATED);	// set state to TERMINATED
-				completedProcesses.add(process);	// adding to pile of completed process (WOULDN"T EXIST IN A REAL COMPUTER)
+				setChanged();
+				notifyObservers(process); // notify view of process termination so it can put them in a list
 				System.out.println("\n*** PID " + process.getPID() + " is terminating! ***");
 			}
 			

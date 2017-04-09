@@ -21,10 +21,10 @@ public class Config {
 		
 		if (Math.random() > 0.5)
 			resourceList.add(RESOURCES[0]); // HDD medium-probability
+		if (Math.random() > 0.5)
+			resourceList.add(RESOURCES[1]); // SSD - medium probability
 		if (Math.random() > 0.75)
-			resourceList.add(RESOURCES[1]); // SSD - low probability
-		if (Math.random() > 0.25)
-			resourceList.add(RESOURCES[2]); // KEYBOARD - medium-high probability
+			resourceList.add(RESOURCES[2]); // KEYBOARD - low probability
 		if (Math.random() > 0.1)
 			resourceList.add(RESOURCES[3]); // MONITOR - high probability
 		

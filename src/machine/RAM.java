@@ -1,10 +1,12 @@
 package machine;
 
+import java.util.Observable;
+
 import kernel.Process;
 
-public class RAM {
+public class RAM extends Observable {
 
-	public static int CAPACITY = 4194304; // 4GB
+	public static int CAPACITY = 1000000; // 1GB
 	private static int currentUsage = 0; 		// amount of memory in use
 	
 	public static void loadProcess(Process process) {
@@ -20,6 +22,6 @@ public class RAM {
 	}
 	
 	public static double getPercentUsed(){
-		return (currentUsage/CAPACITY)*100;
+		return (currentUsage/(double)CAPACITY)*100.00;
 	}
 }

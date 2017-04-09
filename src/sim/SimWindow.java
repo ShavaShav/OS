@@ -33,7 +33,7 @@ public class SimWindow extends JFrame implements Observer {
 		setBackground(new Color(255, 255, 255));
 		setTitle("Process Synchronization Simulation");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1152, 751);
+		setBounds(100, 100, 1648, 900);
 		
 		this.schedulerModel = schedulerModel;	
 		
