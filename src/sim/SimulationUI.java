@@ -12,7 +12,7 @@ import structures.Schedule;
 
 public class SimulationUI {
 	public static final boolean DETAILS = true;
-	public static final int NUM_PROCESSES = 10, 
+	public static final int NUM_PROCESSES = 2, 
 			MAX_TICKS = 100000,
 			SCHEDULE = Schedule.FCFS;
 	

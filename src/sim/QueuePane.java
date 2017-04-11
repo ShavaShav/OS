@@ -114,7 +114,7 @@ public class QueuePane extends JPanel implements Observer{
 		return queueGrid;	
 	}
 	
-	public static synchronized JPanel generateProcessBox(Process process){
+	public static JPanel generateProcessBox(Process process){
 		JPanel processPanel = new JPanel();
 		if (process != null) {
 			processPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));

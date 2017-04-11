@@ -9,7 +9,7 @@ import kernel.Process;
 
 // CPU is static
 public class CPU extends Observable {
-	public static int CLOCK_SPEED = 1000; // 1000 ticks per second
+	public static int CLOCK_SPEED = 750; // 1000 ticks per second
 	
 	private static final CPU instance = new CPU();
 	private static ExecutorService core = Executors.newSingleThreadExecutor();
@@ -73,10 +73,9 @@ public class CPU extends Observable {
  		try {
  			int randomBurst = currentProcess.getRandomBurst();
  			do {
- 				currentProcess.advanceIP(CLOCK_SPEED/2); // advance half a second
- 				randomBurst -= CLOCK_SPEED/2;
- 				Thread.sleep(CLOCK_SPEED/2); 	
- 				System.out.println(randomBurst);
+ 				currentProcess.advanceIP(500); // advance half a second
+ 				randomBurst -= 500;
+ 				Thread.sleep(500); 	
  			} while (randomBurst > 0);
  			// simulate an i/o or syscall - return control to kernel
  			this.interrupt();

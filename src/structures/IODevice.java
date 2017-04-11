@@ -11,9 +11,9 @@ import kernel.Process;
 // Each resource will take operate at a certain speed. The use of Java's
 // BlockingQueue interface allows for race-free addition and removal from waiting queues
 public abstract class IODevice extends Observable implements Runnable {
-	public static double FAST_SPEED = 3000; // ticks it takes to complete request
-	public static double MEDIUM_SPEED = 5000;
-	public static double SLOW_SPEED = 7000;
+	public static double FAST_SPEED = 2.5; // seconds it takes to complete request
+	public static double MEDIUM_SPEED = 3.5;
+	public static double SLOW_SPEED = 5;
 	private static int numResources = 0;
 	private Random random;
 	private boolean isRunning = false;
@@ -49,22 +49,23 @@ public abstract class IODevice extends Observable implements Runnable {
 	public int numQueuedProcesses() { return queue.size(); }
 	
 	// add a process to the queue
-	public void addToQueue(Process process) throws InterruptedException{
+	public synchronized void addToQueue(Process process) throws InterruptedException{
 		queue.add(process);
 	}
 	
 	// gets the next process after it's request has been completed (simulated
 	// by sleeping) - The queue blocks if empty
 	public Process getNextCompletedProcess() throws InterruptedException{
-		long randTime = (long) (getRandomTime(speed));
-		Thread.sleep((long) speed);
+		long randTime = (long) (getRandomTime(speed) * 1000);
+		System.out.println(randTime/1000.00 + " secs to complete request");
+		Thread.sleep(randTime);
 		return queue.next();
 	}
 	
 	// gets the next random time close to the speed, used by
 	private double getRandomTime(double speed) {
 		double time = random.nextGaussian() * (speed/8) + speed;
-		return time > 250 ? time : 250;
+		return time > 1.00 ? time : 1.00;
 	}
 	
 	// runs in a separate thread due to busy waits

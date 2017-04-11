@@ -42,6 +42,8 @@ public class SimPanel extends JPanel implements Observer {
 	private JPanel panelIOQueue4;
 	private JPanel panelIOQueue3;
 	private Timer cpuTimer;
+	
+	private int PANE_HEIGHT = 400;
 	/**
 	 * Create the panel.
 	 */
@@ -52,10 +54,11 @@ public class SimPanel extends JPanel implements Observer {
 		gridBagLayout.columnWidths = new int[]{0, 0, 0, 35, 19, 12, 34, 0, 0, 28, 15, 20, 0, 0, 45, 16, 83, 0};
 		gridBagLayout.rowHeights = new int[]{39, 22, 131, 0};
 		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{1.0, 0.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 		
 		panelReadyQueue = new QueuePane(scheduler.getReadyQueue(), "Ready Queue");
+		panelReadyQueue.setPreferredSize(new Dimension(0, PANE_HEIGHT));
 		GridBagConstraints gbc_panelReadyQueue = new GridBagConstraints();
 		gbc_panelReadyQueue.gridwidth = 4;
 		gbc_panelReadyQueue.insets = new Insets(0, 0, 5, 5);
@@ -154,6 +157,7 @@ public class SimPanel extends JPanel implements Observer {
 		panelDiagnostics.add(progressRAM, gbc_progressBar);
 		
 		panelTerminated = new ListPane("Terminated");
+		panelTerminated.setPreferredSize(new Dimension(0, PANE_HEIGHT));
 		GridBagConstraints gbc_panelTerminated = new GridBagConstraints();
 		gbc_panelTerminated.insets = new Insets(0, 0, 5, 0);
 		gbc_panelTerminated.fill = GridBagConstraints.BOTH;
@@ -162,6 +166,7 @@ public class SimPanel extends JPanel implements Observer {
 		add(panelTerminated, gbc_panelTerminated);
 		
 		panelIOQueue1 = new QueuePane(Config.RESOURCES[2].getQueue(), Config.RESOURCES[2].getName());
+		panelIOQueue1.setPreferredSize(new Dimension(0, PANE_HEIGHT));
 		GridBagConstraints gbc_panelIOQueue1 = new GridBagConstraints();
 		gbc_panelIOQueue1.gridwidth = 4;
 		gbc_panelIOQueue1.insets = new Insets(0, 0, 0, 5);
@@ -171,6 +176,7 @@ public class SimPanel extends JPanel implements Observer {
 		add(panelIOQueue1, gbc_panelIOQueue1);
 		
 		panelIOQueue2 = new QueuePane(Config.RESOURCES[3].getQueue(), Config.RESOURCES[3].getName());
+		panelIOQueue2.setPreferredSize(new Dimension(0, PANE_HEIGHT));
 		GridBagConstraints gbc_panelIOQueue2 = new GridBagConstraints();
 		gbc_panelIOQueue2.gridwidth = 4;
 		gbc_panelIOQueue2.insets = new Insets(0, 0, 0, 5);
@@ -180,6 +186,7 @@ public class SimPanel extends JPanel implements Observer {
 		add(panelIOQueue2, gbc_panelIOQueue2);
 		
 		panelIOQueue3 = new QueuePane(Config.RESOURCES[0].getQueue(), Config.RESOURCES[0].getName());
+		panelIOQueue3.setPreferredSize(new Dimension(0, PANE_HEIGHT));
 		GridBagConstraints gbc_panelIOQueue3 = new GridBagConstraints();
 		gbc_panelIOQueue3.gridwidth = 4;
 		gbc_panelIOQueue3.insets = new Insets(0, 0, 0, 5);
@@ -189,6 +196,7 @@ public class SimPanel extends JPanel implements Observer {
 		add(panelIOQueue3, gbc_panelIOQueue3);
 		
 		panelIOQueue4 = new QueuePane(Config.RESOURCES[1].getQueue(), Config.RESOURCES[1].getName());
+		panelIOQueue4.setPreferredSize(new Dimension(0, PANE_HEIGHT));
 		GridBagConstraints gbc_panelIOQueue4 = new GridBagConstraints();
 		gbc_panelIOQueue4.fill = GridBagConstraints.BOTH;
 		gbc_panelIOQueue4.gridx = 16;
@@ -206,23 +214,27 @@ public class SimPanel extends JPanel implements Observer {
 			
 //			// CPU has received interrupt, show process change in Running section
 			Process process = CPU.getInstance().getCurrentProcess();
-			if (process != null){
-				System.out.println("Observing new process in CPU: " + process);
-				panelRunning.remove(panelRunningProcessBox);
-				panelRunningProcessBox = QueuePane.generateProcessBox(process);
-				panelRunningProcessBox.setPreferredSize(new Dimension(170,50));
-				panelRunning.add(panelRunningProcessBox, BorderLayout.CENTER);
-				panelRunning.revalidate();
-				panelRunning.repaint();
-				
-				cpuTimer = new Timer();
-				cpuTimer.schedule(new UpdateCPUWorkBar(process), 0, CPU.CLOCK_SPEED/2);
-				
-				panelCPULight.setBackground(new Color(0, 255, 0));
-			} else {
-				cpuTimer.cancel();
-				panelRunning.remove(panelRunningProcessBox);
-				panelCPULight.setBackground(new Color(204, 153, 153));
+			synchronized (this) {
+				if (process != null){
+						panelRunning.remove(panelRunningProcessBox);
+						panelRunningProcessBox = QueuePane.generateProcessBox(process);
+						panelRunningProcessBox.setPreferredSize(new Dimension(170,50));
+						panelRunning.add(panelRunningProcessBox, BorderLayout.CENTER);
+						panelRunning.revalidate();
+						panelRunning.repaint();
+						
+						cpuTimer = new Timer();
+						cpuTimer.schedule(new UpdateCPUWorkBar(process), 0, CPU.CLOCK_SPEED/2);
+						
+						panelCPULight.setBackground(new Color(0, 255, 0));
+
+				} else {
+	
+						cpuTimer.cancel();
+						panelRunning.remove(panelRunningProcessBox);
+						panelCPULight.setBackground(new Color(204, 153, 153));
+
+				}
 			}
 		}		
 	}
