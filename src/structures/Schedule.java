@@ -10,7 +10,45 @@ public interface Schedule {
 	public static final int PRIORITY = 2; // highest priority first
 	public static final int SRT = 3; // shortest remaining time
 	
-	public static int NUM_SCHEDULES = 4;
+	public static final int NUM_SCHEDULES = 4;
+	
+	/*
+	 *  The following comparators are used to implement the schedule
+	 *  for the ProcessQueue's priority queue, which sorts processes
+	 *  using them.
+	 */
+	
+	public class PriorityComparator implements Comparator<Process> {
+		@Override
+		public int compare(Process p1, Process p2) {
+			if (p1.isHighPriority() == p2.isHighPriority())
+				return 0; // same priority
+			else {
+				if (p1.isHighPriority())
+					return -1; // p1 is higher, so it comes before p2
+				else
+					return 1; // vice versa
+			}
+		}
+	}
+	
+	public class SJFComparator implements Comparator<Process> {
+		@Override
+		public int compare(Process p1, Process p2) {
+			return Integer.compare(p1.getTotalTicks(), p2.getTotalTicks());
+		}
+	}
+	
+	public class SRTComparator implements Comparator<Process> {
+		@Override
+		public int compare(Process p1, Process p2) {
+			return Integer.compare(p1.getTicksRemaining(), p2.getTicksRemaining());
+		}
+	}
+	
+	/*
+	 * Some accessors
+	 */
 	
 	public static String getName(int schedule){
 		switch (schedule){
@@ -20,6 +58,21 @@ public interface Schedule {
 			return "SJF";
 		case SRT:
 			return "SRT";
+		case PRIORITY:
+			return "Priority";
+		default:
+			return "Unknown";
+		}
+	}
+	
+	public static String getFullName(int schedule){
+		switch (schedule){
+		case FCFS:
+			return "First Come First Serve";
+		case SJF:
+			return "Shortest Job First";
+		case SRT:
+			return "Shortest Remaining Time";
 		case PRIORITY:
 			return "Priority";
 		default:
@@ -42,31 +95,4 @@ public interface Schedule {
 		}
 	}
 	
-	public class PriorityComparator implements Comparator<Process> {
-		@Override
-		public int compare(Process p1, Process p2) {
-			if (p1.isHighPriority() == p2.isHighPriority())
-				return 0;
-			else {
-				if (p1.isHighPriority())
-					return -1;
-				else
-					return 1;
-			}
-		}
-	}
-	
-	public class SJFComparator implements Comparator<Process> {
-		@Override
-		public int compare(Process p1, Process p2) {
-			return Integer.compare(p1.getTotalTicks(), p2.getTotalTicks());
-		}
-	}
-	
-	public class SRTComparator implements Comparator<Process> {
-		@Override
-		public int compare(Process p1, Process p2) {
-			return Integer.compare(p1.getTicksRemaining(), p2.getTicksRemaining());
-		}
-	}
 }

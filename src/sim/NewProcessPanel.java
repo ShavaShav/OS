@@ -2,7 +2,6 @@ package sim;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -13,7 +12,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.border.LineBorder;
 
 import machine.CPU;
@@ -23,17 +21,16 @@ import structures.IODevice;
 
 import javax.swing.JCheckBox;
 import javax.swing.BoxLayout;
-import javax.swing.InputMap;
 
 import java.awt.event.ActionListener;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 
 public class NewProcessPanel extends JPanel {
+	private static final long serialVersionUID = 6523775340917553431L;
 	private JTextField textFieldSize;
 	private JTextField textFieldTicks;
-	private JComboBox comboBoxPriority;
+	private JComboBox<String> comboBoxPriority;
 	private JCheckBox[] chckbxResources;
 	private JButton btnAddProcess;
 	/**
@@ -60,7 +57,6 @@ public class NewProcessPanel extends JPanel {
 		
 		JPanel panelProcessTitle = new JPanel();
 		panelProcessTitle.setOpaque(false);
-		FlowLayout fl_panelProcessTitle = (FlowLayout) panelProcessTitle.getLayout();
 		GridBagConstraints gbc_panelProcessTitle = new GridBagConstraints();
 		gbc_panelProcessTitle.insets = new Insets(0, 0, 5, 5);
 		gbc_panelProcessTitle.fill = GridBagConstraints.BOTH;
@@ -109,7 +105,7 @@ public class NewProcessPanel extends JPanel {
 		JLabel lblPriority = new JLabel("Priority");
 		panelPriority.add(lblPriority, BorderLayout.NORTH);
 		
-		comboBoxPriority = new JComboBox(new String[]{"High Priority", "Low Priority"});
+		comboBoxPriority = new JComboBox<String>(new String[]{"High Priority", "Low Priority"});
 		panelPriority.add(comboBoxPriority, BorderLayout.SOUTH);
 		
 		JPanel panelResources = new JPanel();

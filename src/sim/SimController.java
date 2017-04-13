@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
+import javax.swing.JOptionPane;
 
 import kernel.CPUScheduler;
 import kernel.Process;
@@ -26,7 +26,7 @@ public class SimController {
 		this.scheduler = scheduler;
 		npPanel = new NewProcessPanel();
 		scPanel = new SimConfigPanel();
-		simPanel = new SimPanel(scheduler);
+		simPanel = new SimPanel(scheduler); // model only needs to be used in simPanel
 		
 		simWindow.addSimulationConfigPanel(scPanel);
 		simWindow.addNewProcessPanel(npPanel);
@@ -36,8 +36,6 @@ public class SimController {
 		scPanel.addClockSpeedController(new ClockSpeedListener());
 		scPanel.addRAMCapacityController(new RAMCapacityListener());
 		scPanel.addScheduleController(new ScheduleListener());
-		
-		scheduler.addObserver(simWindow);
 	}
 	
 	// called when add process button is pressed
@@ -51,7 +49,11 @@ public class SimController {
 			ArrayList<IODevice> resources = npPanel.getResources();
 			int totalTicks = npPanel.getTotalTicks();
 			Process newProcess = new Process(size, hiPriority, totalTicks, resources);
-			scheduler.scheduleProcess(newProcess);
+			try {
+				scheduler.scheduleProcess(newProcess);
+			} catch (Exception e1) {
+				JOptionPane.showMessageDialog(simWindow, e1.getMessage(), "Error!", JOptionPane.WARNING_MESSAGE);
+			}
 			
 			if (!scheduler.isRunning()) {
 				// start the device threads

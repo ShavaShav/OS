@@ -14,16 +14,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
-import kernel.CPUScheduler;
 import structures.Schedule;
-import kernel.Process;
 import machine.CPU;
 import machine.RAM;
 
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.awt.event.ActionEvent;
-import javax.swing.SwingConstants;
 
 public class SimConfigPanel extends JPanel {
 	private static final long serialVersionUID = -6035621362856493608L;
@@ -162,7 +157,7 @@ public class SimConfigPanel extends JPanel {
 		
 		JLabel lblSchedule = new JLabel("Schedule");
 		panelSchedule_1.add(lblSchedule, BorderLayout.NORTH);
-		comboBoxSchedule = new JComboBox(scheduleStrings);
+		comboBoxSchedule = new JComboBox<String>(scheduleStrings);
 		panelSchedule_1.add(comboBoxSchedule, BorderLayout.SOUTH);
 		
 		// initialize a new scheduler

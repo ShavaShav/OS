@@ -1,9 +1,6 @@
 package sim;
 
 import java.awt.BorderLayout;
-import java.util.Observable;
-import java.util.Observer;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
@@ -11,45 +8,44 @@ import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.awt.Color;
 import javax.swing.border.BevelBorder;
-import javax.swing.JButton;
-import javax.swing.border.LineBorder;
 
-import kernel.CPUScheduler;
-import java.awt.event.ActionEvent;
 
-public class SimWindow extends JFrame implements Observer {
+public class SimWindow extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
-	private CPUScheduler schedulerModel;
 	private JPanel panelSettings;
 
 	/**
 	 * Create the frame.
 	 */
-	public SimWindow(CPUScheduler schedulerModel) {
+	public SimWindow() {
 		setBackground(new Color(255, 255, 255));
 		setTitle("Process Synchronization Simulation");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1648, 900);
 		
-		this.schedulerModel = schedulerModel;	
-		
 		contentPane = new JPanel();
+		contentPane.setBackground(new Color(204, 204, 153));
 		contentPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		contentPane.setLayout(new BorderLayout(5, 5));
 		setContentPane(contentPane);
 		
 		JPanel panelTitle = new JPanel();
+		panelTitle.setBackground(new Color(204, 204, 153));
+		panelTitle.setOpaque(true);
 		contentPane.add(panelTitle, BorderLayout.NORTH);
 		
 		JLabel lblProcessSynchronizationSimulation = new JLabel("Process Synchronization Simulation");
-		lblProcessSynchronizationSimulation.setFont(new Font("Verdana", Font.BOLD, 20));
+		lblProcessSynchronizationSimulation.setForeground(new Color(0, 0, 0));
+		lblProcessSynchronizationSimulation.setBackground(new Color(51, 51, 51));
+		
+		lblProcessSynchronizationSimulation.setFont(new Font("Verdana", Font.BOLD, 30));
 		panelTitle.add(lblProcessSynchronizationSimulation);
 		
 		panelSettings = new JPanel();
+		panelSettings.setBackground(new Color(204, 204, 153));
 		contentPane.add(panelSettings, BorderLayout.WEST);
 		GridBagLayout gbl_panelSettings = new GridBagLayout();
 		gbl_panelSettings.columnWidths = new int[]{95, 0};
@@ -80,11 +76,4 @@ public class SimWindow extends JFrame implements Observer {
 	public void addSimulationPanel(SimPanel simPanel){
 		contentPane.add(simPanel, BorderLayout.CENTER);
 	}
-
-	// called by the CPU Scheduler model
-	@Override
-	public void update(Observable obs, Object o) {
-		System.out.println ("View      : Observable is " + obs.getClass() + ", object passed is " + o.getClass());
-	}
-
 }

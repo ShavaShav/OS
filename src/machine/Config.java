@@ -6,6 +6,8 @@ import structures.IODevice;
 
 public class Config {
 	public static final boolean DEBUG = true;
+	public static int CPU_UPDATE_SPEED = 500; // half a second
+	
 	
 	public static final IODevice[] RESOURCES = new IODevice[]{
 			HardDiskDrive.getInstance(),
@@ -30,4 +32,5 @@ public class Config {
 		
 		return resourceList;
 	}
+	
 }

@@ -6,11 +6,14 @@ import kernel.Process;
 
 public class RAM extends Observable {
 
-	public static int CAPACITY = 1000000; // 1GB
+	public static int CAPACITY = 500000; // 500MB
 	private static int currentUsage = 0; 		// amount of memory in use
 	
-	public static void loadProcess(Process process) {
-		currentUsage += process.getSize();
+	public static void loadProcess(Process process) throws Exception {
+		if ((CAPACITY - currentUsage) < process.getSize())
+			throw new Exception("RAM: Not enough space available.");
+		
+		currentUsage += process.getSize();	
 	}
 	
 	public static void unloadProcess(Process process) {

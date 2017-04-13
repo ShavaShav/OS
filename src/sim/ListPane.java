@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.ArrayList;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -14,11 +13,11 @@ import javax.swing.border.LineBorder;
 
 import kernel.Process;
 
+// a more efficient process pane then queuepane, can only add to it though (used for terminated processes)
 public class ListPane extends JPanel {
-
+	private static final long serialVersionUID = 3648497321370539853L;
 	private JScrollPane scrollPane;
 	private JLabel lblsched;
-	private ArrayList<Process> queue;
 	private JPanel queueGrid;
 	
 	private static int procRow = 0;
@@ -26,7 +25,6 @@ public class ListPane extends JPanel {
 	 * Create the panel.
 	 */
 	public ListPane(String title) {
-		queue = new ArrayList<Process>();
 		setLayout(new BorderLayout(0, 0));
 		setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
 		JPanel titlePanel = new JPanel();
@@ -36,7 +34,7 @@ public class ListPane extends JPanel {
 		lblNewLabel.setFont(new Font("Verdana", Font.BOLD, 13));
 		titlePanel.add(lblNewLabel);
 		
-		lblsched = new JLabel("FCFS"); // lists are first come first serve
+		lblsched = new JLabel("List");
 		lblsched.setFont(new Font("Verdana", Font.PLAIN, 11));
 		titlePanel.add(lblsched);
 		
@@ -58,7 +56,6 @@ public class ListPane extends JPanel {
 		lblsched.setText(scheduleName);
 	}
 
-	// very inefficient, try to think of a better way...
 	public void addToList(Process process){
 		// go through processes, add to grid column wise
 		JPanel processPanel = QueuePane.generateProcessBox(process);

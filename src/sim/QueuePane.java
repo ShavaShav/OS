@@ -2,31 +2,26 @@ package sim;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import javax.swing.JTextPane;
 import javax.swing.border.LineBorder;
 
 import kernel.Process;
-import machine.Config;
-import machine.Monitor;
 import structures.ProcessQueue;
 import structures.Schedule;
 
 import java.awt.Font;
 import javax.swing.JScrollPane;
-import javax.swing.JFrame;
 import java.awt.FlowLayout;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import java.awt.Color;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Random;
 
 public class QueuePane extends JPanel implements Observer{
+	private static final long serialVersionUID = -8290089352246145892L;
 	private volatile JScrollPane scrollPane;
 	private JLabel lblsched;
 	/**
@@ -54,11 +49,6 @@ public class QueuePane extends JPanel implements Observer{
 
 		add(scrollPane, BorderLayout.CENTER);
 	}
-	
-	public static QueuePane getTestPane(){
-		QueuePane qPane = new QueuePane(ProcessQueue.getTestQueue(), "Test Queue");
-		return qPane;
-	}
 
 	// when queue changes (add or remove) update the pane
 	@Override
@@ -76,7 +66,10 @@ public class QueuePane extends JPanel implements Observer{
 		lblsched.setText(scheduleName);
 	}
 
-	// very inefficient, try to think of a better way...
+	// This method is sort of inefficient, as it generates the whole list
+	// everytime it is changed. This is necessary as processes added
+	// to queue in different ways (according to schedule)
+	// If I were to do this again, I would use JTables that observe the queues
 	public JPanel generateQueueGrid(ProcessQueue queue){
 		// set up grid
 		JPanel queueGrid = new JPanel();
@@ -120,7 +113,9 @@ public class QueuePane extends JPanel implements Observer{
 			processPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
 			
 			if (process.isHighPriority())
-				processPanel.setBackground(new Color(153, 255, 255));
+				processPanel.setBackground(new Color(137, 215, 255));
+			else
+				processPanel.setBackground(new Color(188, 232, 255));
 			
 			JLabel lblProcess = new JLabel(process.toString());
 			lblProcess.setFont(new Font("Verdana", Font.PLAIN, 13));
@@ -131,6 +126,7 @@ public class QueuePane extends JPanel implements Observer{
 			progressBar.setStringPainted(true);
 			progressBar.setString(process.getTicksRemaining() + " / " + process.getTotalTicks() + " ticks");
 			progressBar.setValue(process.getPercentageDone());
+			progressBar.setForeground(new Color(74, 145, 68));
 			processPanel.add(progressBar);
 		}
 		processPanel.setAlignmentY(CENTER_ALIGNMENT);

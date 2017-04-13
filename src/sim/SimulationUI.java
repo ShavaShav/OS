@@ -5,7 +5,6 @@ import java.util.Random;
 
 import kernel.CPUScheduler;
 import kernel.Process;
-import machine.CPU;
 import machine.Config;
 import structures.IODevice;
 import structures.Schedule;
@@ -38,14 +37,20 @@ public class SimulationUI {
 			));
 		}
 		
-		CPUScheduler sts = new CPUScheduler(SCHEDULE, initialProcesses);
+		CPUScheduler sts;
+		try {
+			sts = new CPUScheduler(SCHEDULE, initialProcesses);
+			// start the device threads
+			for (IODevice device : Config.RESOURCES)
+				new Thread(device).start();
+			
+			// start the scheduling algorithm
+			sts.start();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
 		
-		// start the device threads
-		for (IODevice device : Config.RESOURCES)
-			new Thread(device).start();
-		
-		// start the scheduling algorithm
-		sts.start();
 	}
 	
 	public static void main(String args[]){

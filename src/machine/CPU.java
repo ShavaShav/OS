@@ -1,29 +1,24 @@
 package machine;
 
 import java.util.Observable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import kernel.Process;
 
-// CPU is static
+/*
+ *  CPU is a single instance, static class observed by the scheduler.
+ *  When it is allocated with a process, it "runs it" in a separate thread
+ *  and notifies the scheduler when it is done, so it can be deallocated.
+ */
+
 public class CPU extends Observable {
-	public static int CLOCK_SPEED = 750; // 1000 ticks per second
+	public static int CLOCK_SPEED = 750; // 750 ticks per second by default
 	
 	private static final CPU instance = new CPU();
 	private static ExecutorService core = Executors.newSingleThreadExecutor();
 	private static Process currentProcess;
-	
-	public ProcessObservable processObservable = new ProcessObservable();
-	
-	private class ProcessObservable extends Observable {
-		public void changeAndNotify(){
-			this.setChanged();
-			this.notifyObservers();
-		}
-	};
-	
+
 	// only allow one CPU to be instantiated
 	private CPU(){};	
 	public static CPU getInstance(){ return instance; }
@@ -38,7 +33,6 @@ public class CPU extends Observable {
 	// load and run a process on the cpu
 	public void allocate(Process process){
 		currentProcess = process;
-		processObservable.changeAndNotify();
 		this.run();
 	}
 	
@@ -46,7 +40,6 @@ public class CPU extends Observable {
 	public Process deallocate(){
 		Process interruptedProcess = currentProcess;
 		currentProcess = null;
-		processObservable.changeAndNotify();
 		return interruptedProcess;
 	}
 	
@@ -67,15 +60,15 @@ public class CPU extends Observable {
  	}
  	
  	// simulate working for the CPU - burst time by sleeping
- 	// for the amount of cpuBurst ticks (advanceIP) divided
- 	/// by the clock speed multiplied by 1000 ( milliseconds in a sec)
+ 	// for a random amount of time, advancing through burst in segments
+ 	// (CPU_UPDATE_SPEED) so that GUI can update progress bar in real time
  	private void doWork() {
  		try {
  			int randomBurst = currentProcess.getRandomBurst();
  			do {
- 				currentProcess.advanceIP(500); // advance half a second
- 				randomBurst -= 500;
- 				Thread.sleep(500); 	
+ 				currentProcess.advanceIP(Config.CPU_UPDATE_SPEED);
+ 				randomBurst -= Config.CPU_UPDATE_SPEED;
+ 				Thread.sleep(Config.CPU_UPDATE_SPEED);
  			} while (randomBurst > 0);
  			// simulate an i/o or syscall - return control to kernel
  			this.interrupt();
@@ -85,7 +78,4 @@ public class CPU extends Observable {
  		}
 	 }
 
- 	public Observable getProcessObservable(){
- 		return processObservable;
- 	}
 }

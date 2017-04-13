@@ -10,7 +10,7 @@ package kernel;
  * processes once they are running, so these problems don't 
  * happen in preemptive kernels.
  * 
- * Therefore, this code will not be used in the simulation of
+ * So, this code will not be used in the simulation of
  * process synchronization, but is included here to fulfill
  * the requirements of the project and to show our understanding
  * of the problem.

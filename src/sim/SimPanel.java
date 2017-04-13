@@ -1,6 +1,5 @@
 package sim;
 
-import java.awt.event.ActionListener;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Timer;
@@ -10,9 +9,9 @@ import javax.swing.JPanel;
 
 import kernel.CPUScheduler;
 import kernel.Process;
-import machine.CPU;
 import machine.Config;
 import machine.RAM;
+import structures.State;
 
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -28,9 +27,6 @@ import java.awt.CardLayout;
 import javax.swing.border.LineBorder;
 
 public class SimPanel extends JPanel implements Observer {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1876860546817802467L;
 	QueuePane panelReadyQueue;
 	JPanel panelRunning, panelRunningProcessBox;
@@ -42,13 +38,16 @@ public class SimPanel extends JPanel implements Observer {
 	private JPanel panelIOQueue4;
 	private JPanel panelIOQueue3;
 	private Timer cpuTimer;
-	
 	private int PANE_HEIGHT = 400;
+	
 	/**
 	 * Create the panel.
 	 */
 	public SimPanel(CPUScheduler scheduler) {
-		CPU.getInstance().getProcessObservable().addObserver(new RunningProcessObserver());
+		setBackground(new Color(255, 255, 255));
+//		// panel will watch the CPU for changes to it
+//		CPU.getInstance().getProcessObservable().addObserver(new RunningProcessObserver());
+		// watch the scheduler, it will tell us when a process is allocated to CPU, deallocated, and terminated
 		scheduler.addObserver(this);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 0, 35, 19, 12, 34, 0, 0, 28, 15, 20, 0, 0, 45, 16, 83, 0};
@@ -68,6 +67,7 @@ public class SimPanel extends JPanel implements Observer {
 		add(panelReadyQueue, gbc_panelReadyQueue);
 		
 		JPanel panelRunningDiagnostics = new JPanel();
+		panelRunningDiagnostics.setBorder(new LineBorder(new Color(0, 0, 0), 2));
 		GridBagConstraints gbc_panelRunningDiagnostics = new GridBagConstraints();
 		gbc_panelRunningDiagnostics.gridwidth = 9;
 		gbc_panelRunningDiagnostics.insets = new Insets(0, 0, 5, 5);
@@ -207,53 +207,63 @@ public class SimPanel extends JPanel implements Observer {
 	public void setReadyQueueScheduleText(String scheduleName){
 		panelReadyQueue.setScheduleText(scheduleName);
 	}
-	
-	public class RunningProcessObserver implements Observer{
-		@Override
-		public void update(Observable o, Object arg) {
-			
-//			// CPU has received interrupt, show process change in Running section
-			Process process = CPU.getInstance().getCurrentProcess();
-			synchronized (this) {
-				if (process != null){
-						panelRunning.remove(panelRunningProcessBox);
-						panelRunningProcessBox = QueuePane.generateProcessBox(process);
-						panelRunningProcessBox.setPreferredSize(new Dimension(170,50));
-						panelRunning.add(panelRunningProcessBox, BorderLayout.CENTER);
-						panelRunning.revalidate();
-						panelRunning.repaint();
-						
-						cpuTimer = new Timer();
-						cpuTimer.schedule(new UpdateCPUWorkBar(process), 0, CPU.CLOCK_SPEED/2);
-						
-						panelCPULight.setBackground(new Color(0, 255, 0));
 
-				} else {
-	
-						cpuTimer.cancel();
-						panelRunning.remove(panelRunningProcessBox);
-						panelCPULight.setBackground(new Color(204, 153, 153));
-
-				}
-			}
-		}		
-	}
-
-	// called by scheduler on process termination
+	// called by scheduler on process termination, and cpu allocation/deallocation
 	@Override
 	public void update(Observable obs, Object o) {
 		if (o instanceof Process){
 			Process process = (Process) o;
-			panelTerminated.addToList(process);
-			updateDiagnostics();
+						
+			synchronized(this){
+				if (process.getState() == State.RUNNING) {
+					// CPU allocation
+					panelRunning.remove(panelRunningProcessBox);
+					panelRunningProcessBox = QueuePane.generateProcessBox(process);
+					panelRunningProcessBox.setPreferredSize(new Dimension(170,50));
+					panelRunning.add(panelRunningProcessBox, BorderLayout.CENTER);
+					panelRunning.revalidate();
+					panelRunning.repaint();
+					
+					// start the timer to update progress bar while CPU active
+					cpuTimer = new Timer();
+					cpuTimer.schedule(new UpdateCPUWorkBar(process), 0, Config.CPU_UPDATE_SPEED);
+					
+					// turn on "light"
+					panelCPULight.setBackground(new Color(0, 255, 0)); // green
+				} else {
+					// CPU deallocation - clear the Running box and turn off light
+					cpuTimer.cancel();
+					cpuTimer.purge();
+					
+					try {
+						Thread.sleep(Config.CPU_UPDATE_SPEED/2);
+					} catch (InterruptedException e) {
+						// keep going, only sleeping for the length of the timer task because
+						// sometimes cpuTimer.cancel() finishes after panelRunning.remove()
+						// so it draws the process back in after.
+					}
+					panelRunning.remove(panelRunningProcessBox);
+					panelCPULight.setBackground(new Color(204, 153, 153)); // light-red
+				}
+				
+				if (process.getState() == State.TERMINATED){
+					// process termination, add to list
+					panelTerminated.addToList(process);
+					panelTerminated.repaint();
+					panelTerminated.revalidate();
+					updateDiagnostics();
+				}
+			}
 		}
 	}
 	
+	// update the RAM panel
 	public void updateDiagnostics(){
 		progressRAM.setValue((int) RAM.getPercentUsed());
 		progressRAM.setString(RAM.getCurrentUsage()/100 + " / " + RAM.CAPACITY/100 + " MB");
 	}
 	
+	// this refreshes the CPU panel to show progress made in real time, every half second
 	private class UpdateCPUWorkBar extends TimerTask {
 		private Process process;
 		public UpdateCPUWorkBar(Process process){

@@ -1,16 +1,21 @@
 package structures;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Observable;
-import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import kernel.Process;
-import machine.Config;
-import machine.Monitor;
-import sim.QueuePane;
+
+/*
+ *  ProcessQueue is our implementation of a waiting queue of processes.
+ *  It takes a schedule and organizes it's queue according to this.
+ *  The use of Java's BlockingQueue interface allows for race-free addition 
+ *  and removal to and from the queues. They use locks internally to do this.
+ *  It is used for any process queue (e.g. ready queue, wait queues, etc.)
+ */
 
 public class ProcessQueue extends Observable {
 	private static int INIT = 11; // initial capacity of the queue (java default)
@@ -24,26 +29,22 @@ public class ProcessQueue extends Observable {
 		queue = getNewQueue(schedule);
 	}
 	
+	// set to use a certain schedule
 	public void setSchedule(int schedule){
+		this.schedule = schedule;
 		BlockingQueue<Process> newQueue = getNewQueue(schedule);
 		newQueue.addAll(queue); // add from queue to new queue according to schedule
 		queue = newQueue;	// replace with new queue
-		this.schedule = schedule;
 		setChanged();
 		notifyObservers(Schedule.getName(schedule));
 	}
 	
-	public int getSchedule(){
-		return schedule;
-	}
+	// gets the current schedule
+	public int getSchedule(){ return schedule; }
 	
-	public boolean hasNext(){
-		return queue.peek() != null;
-	}
-	
-	public int size(){
-		return queue.size();
-	}
+	/*
+	 * Queue methods
+	 */
 	
 	// get the next job, according to schedule
 	public Process next() throws InterruptedException {
@@ -60,13 +61,11 @@ public class ProcessQueue extends Observable {
 		notifyObservers();
 	}
 	
-	public Iterator<Process> iterator(){
-		 return new ProcessIterator();
-	}
+	public boolean hasNext(){ return queue.peek() != null; }	
 	
-	public boolean isEmpty(){
-		return queue.isEmpty();
-	}
+	public int size(){ return queue.size(); }
+	
+	public boolean isEmpty(){ return queue.isEmpty(); }
 	
 	public void clear(){
 		queue.clear();
@@ -74,7 +73,38 @@ public class ProcessQueue extends Observable {
 		notifyObservers();
 	}
 	
-	private class ProcessIterator implements Iterator{
+	// generates a Blocking Queue that sorts it's process' according to the schedule
+	private BlockingQueue<Process> getNewQueue(int schedule){
+		BlockingQueue<Process> queue = null;
+		switch (schedule){
+		case Schedule.FCFS:
+			// First Come First Serve (regular queue)
+			queue = new ArrayBlockingQueue<Process>(INIT);
+			break;
+		case Schedule.PRIORITY:
+			// Priority Queue
+			queue = new PriorityBlockingQueue<Process>(INIT, 
+					new Schedule.PriorityComparator());
+			break;
+		case Schedule.SJF:
+			// Shortest Total Time First
+			queue = new PriorityBlockingQueue<Process>(INIT, 
+					new Schedule.SJFComparator());
+			break;
+		case Schedule.SRT:
+			// Shortest Remaining Time First
+			queue = new PriorityBlockingQueue<Process>(INIT, 
+					new Schedule.SRTComparator());
+			break;
+		}
+		return queue;
+	}
+	
+	// Iterator can be used to look through the list without destroying it
+	// by making a copy as an array
+	public Iterator<Process> iterator(){  return new ProcessIterator(); }
+
+	private class ProcessIterator implements Iterator<Process>{
 		Process[] processList;
 		int current = 0;
 		
@@ -88,64 +118,12 @@ public class ProcessQueue extends Observable {
 		}
 		
 		@Override
-		public boolean hasNext() {
-			return current < processList.length;
-		}
+		public boolean hasNext() { return current < processList.length; }
 
 		@Override
-		public Object next() {
-			return processList[current++];
-		}
+		public Process next() { return processList[current++]; }
 		
-	}
-
-	private BlockingQueue<Process> getNewQueue(int schedule){
-		BlockingQueue<Process> queue = null;
-		switch (schedule){
-		case Schedule.FCFS:
-			// First Come First Serve (regular queue)
-			queue = new LinkedBlockingQueue<Process>();
-			break;
-		case Schedule.PRIORITY:
-			// Priority Queue
-			queue = new PriorityBlockingQueue<Process>(INIT, 
-						new Schedule.PriorityComparator());
-			break;
-		case Schedule.SJF:
-			// Shortest Total Time First
-			queue = new PriorityBlockingQueue<Process>(INIT, 
-						new Schedule.SJFComparator());
-			break;
-		case Schedule.SRT:
-			// Shortest Remaining Time First
-			queue = new PriorityBlockingQueue<Process>(INIT, 
-						new Schedule.SRTComparator());
-			break;
-		}
-		return queue;
-	}
-	
-	public static ProcessQueue getTestQueue(){
-		Random random = new Random();
-		ProcessQueue pq = new ProcessQueue(Schedule.FCFS);
-		for (int i = 0; i < 10; i ++){
-			// creating a bunch of random processes
-			int totalTicks = random.nextInt(10000); // random amount of ticks less than the max
-			System.out.println(totalTicks);
-			int size = totalTicks * 100; // making the size (kb) a function of the amount of ticks
-			
-			try {
-				pq.add(new Process(
-					size,    		// KB size 
-					false,			// High Priority?
-					totalTicks,     // Estimated total CPU ticks to complete process
-					Config.getRandomResources()		// Resources that process needs over lifetime
-				));
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}		
-		return pq;
+		@SuppressWarnings("unused")
+		public void reset() { current = 0; }
 	}
 }
