@@ -38,7 +38,7 @@ public class SimPanel extends JPanel implements Observer {
 	private JPanel panelIOQueue4;
 	private JPanel panelIOQueue3;
 	private Timer cpuTimer;
-	private int PANE_HEIGHT = 400;
+	private int PANE_HEIGHT = 400, RUNNING_WIDTH = 350, RUNNING_HEIGHT = 100;
 	
 	/**
 	 * Create the panel.
@@ -50,14 +50,14 @@ public class SimPanel extends JPanel implements Observer {
 		// watch the scheduler, it will tell us when a process is allocated to CPU, deallocated, and terminated
 		scheduler.addObserver(this);
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[]{0, 0, 0, 35, 19, 12, 34, 0, 0, 28, 15, 20, 0, 0, 45, 16, 83, 0};
+		gridBagLayout.columnWidths = new int[]{0, 0, 0, 35, 45, 12, 34, 0, 0, 28, 15, 20, 0, 0, 45, 16, 83, 0};
 		gridBagLayout.rowHeights = new int[]{39, 22, 131, 0};
 		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{1.0, 0.0, 1.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 		
 		panelReadyQueue = new QueuePane(scheduler.getReadyQueue(), "Ready Queue");
-		panelReadyQueue.setPreferredSize(new Dimension(0, PANE_HEIGHT));
+		panelReadyQueue.setPreferredSize(new Dimension(150, 400));
 		GridBagConstraints gbc_panelReadyQueue = new GridBagConstraints();
 		gbc_panelReadyQueue.gridwidth = 4;
 		gbc_panelReadyQueue.insets = new Insets(0, 0, 5, 5);
@@ -67,6 +67,8 @@ public class SimPanel extends JPanel implements Observer {
 		add(panelReadyQueue, gbc_panelReadyQueue);
 		
 		JPanel panelRunningDiagnostics = new JPanel();
+		panelRunningDiagnostics.setMaximumSize(new Dimension(RUNNING_WIDTH + 20, PANE_HEIGHT));
+		panelRunningDiagnostics.setBackground(new Color(255, 255, 255));
 		panelRunningDiagnostics.setBorder(new LineBorder(new Color(0, 0, 0), 2));
 		GridBagConstraints gbc_panelRunningDiagnostics = new GridBagConstraints();
 		gbc_panelRunningDiagnostics.gridwidth = 9;
@@ -76,25 +78,25 @@ public class SimPanel extends JPanel implements Observer {
 		gbc_panelRunningDiagnostics.gridy = 0;
 		add(panelRunningDiagnostics, gbc_panelRunningDiagnostics);
 		GridBagLayout gbl_panelRunningDiagnostics = new GridBagLayout();
-		gbl_panelRunningDiagnostics.columnWidths = new int[]{105, 0};
+		gbl_panelRunningDiagnostics.columnWidths = new int[]{0, 105, 0, 0};
 		gbl_panelRunningDiagnostics.rowHeights = new int[]{0, 0, 0, 0, 0, 33, 0};
-		gbl_panelRunningDiagnostics.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_panelRunningDiagnostics.columnWeights = new double[]{1.0, 0.0, 1.0, Double.MIN_VALUE};
 		gbl_panelRunningDiagnostics.rowWeights = new double[]{1.0, 0.0, 0.0, 1.0, 0.0, 1.0, Double.MIN_VALUE};
 		panelRunningDiagnostics.setLayout(gbl_panelRunningDiagnostics);
 		
 		JLabel lblRunning = new JLabel("Running");
 		GridBagConstraints gbc_lblRunning = new GridBagConstraints();
-		gbc_lblRunning.insets = new Insets(0, 0, 5, 0);
-		gbc_lblRunning.gridx = 0;
+		gbc_lblRunning.insets = new Insets(0, 0, 5, 5);
+		gbc_lblRunning.gridx = 1;
 		gbc_lblRunning.gridy = 1;
 		panelRunningDiagnostics.add(lblRunning, gbc_lblRunning);
 		lblRunning.setFont(new Font("Verdana", Font.BOLD, 15));
 		
 		panelRunning = new JPanel();
 		GridBagConstraints gbc_panelRunning = new GridBagConstraints();
-		gbc_panelRunning.insets = new Insets(0, 0, 5, 0);
+		gbc_panelRunning.insets = new Insets(0, 0, 5, 5);
 		gbc_panelRunning.fill = GridBagConstraints.BOTH;
-		gbc_panelRunning.gridx = 0;
+		gbc_panelRunning.gridx = 1;
 		gbc_panelRunning.gridy = 2;
 		panelRunningDiagnostics.add(panelRunning, gbc_panelRunning);
 		panelRunning.setLayout(new CardLayout(0, 0));
@@ -102,13 +104,14 @@ public class SimPanel extends JPanel implements Observer {
 		
 		panelRunningProcessBox = new JPanel();
 		panelRunning.add(panelRunningProcessBox);
-		panelRunningProcessBox.setPreferredSize(new Dimension(170,50));
+		panelRunningProcessBox.setPreferredSize(new Dimension(RUNNING_WIDTH, RUNNING_HEIGHT));
 		
 		JPanel panelDiagnostics = new JPanel();
+		panelDiagnostics.setBackground(new Color(255, 255, 255));
 		GridBagConstraints gbc_panelDiagnostics = new GridBagConstraints();
-		gbc_panelDiagnostics.insets = new Insets(0, 0, 5, 0);
+		gbc_panelDiagnostics.insets = new Insets(0, 0, 5, 5);
 		gbc_panelDiagnostics.fill = GridBagConstraints.BOTH;
-		gbc_panelDiagnostics.gridx = 0;
+		gbc_panelDiagnostics.gridx = 1;
 		gbc_panelDiagnostics.gridy = 4;
 		panelRunningDiagnostics.add(panelDiagnostics, gbc_panelDiagnostics);
 		GridBagLayout gbl_panelDiagnostics = new GridBagLayout();
@@ -157,7 +160,7 @@ public class SimPanel extends JPanel implements Observer {
 		panelDiagnostics.add(progressRAM, gbc_progressBar);
 		
 		panelTerminated = new ListPane("Terminated");
-		panelTerminated.setPreferredSize(new Dimension(0, PANE_HEIGHT));
+		panelTerminated.setPreferredSize(new Dimension(150, 400));
 		GridBagConstraints gbc_panelTerminated = new GridBagConstraints();
 		gbc_panelTerminated.insets = new Insets(0, 0, 5, 0);
 		gbc_panelTerminated.fill = GridBagConstraints.BOTH;
@@ -219,7 +222,7 @@ public class SimPanel extends JPanel implements Observer {
 					// CPU allocation
 					panelRunning.remove(panelRunningProcessBox);
 					panelRunningProcessBox = QueuePane.generateProcessBox(process);
-					panelRunningProcessBox.setPreferredSize(new Dimension(170,50));
+					panelRunningProcessBox.setPreferredSize(new Dimension(RUNNING_WIDTH, RUNNING_HEIGHT));
 					panelRunning.add(panelRunningProcessBox, BorderLayout.CENTER);
 					panelRunning.revalidate();
 					panelRunning.repaint();
@@ -260,7 +263,7 @@ public class SimPanel extends JPanel implements Observer {
 	// update the RAM panel
 	public void updateDiagnostics(){
 		progressRAM.setValue((int) RAM.getPercentUsed());
-		progressRAM.setString(RAM.getCurrentUsage()/100 + " / " + RAM.CAPACITY/100 + " MB");
+		progressRAM.setString(RAM.getCurrentUsage()/1000 + " / " + RAM.CAPACITY/1000 + " MB");
 	}
 	
 	// this refreshes the CPU panel to show progress made in real time, every half second
@@ -273,7 +276,7 @@ public class SimPanel extends JPanel implements Observer {
 	    	// update the progress bar
 			panelRunning.remove(panelRunningProcessBox);
 			panelRunningProcessBox = QueuePane.generateProcessBox(process);
-			panelRunningProcessBox.setPreferredSize(new Dimension(170,50));
+			panelRunningProcessBox.setPreferredSize(new Dimension(RUNNING_WIDTH, RUNNING_HEIGHT));
 			panelRunning.add(panelRunningProcessBox, BorderLayout.CENTER);
 			panelRunning.revalidate();
 			panelRunning.repaint();

@@ -78,7 +78,13 @@ public class SimController {
 	private class RAMCapacityListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			RAM.CAPACITY = scPanel.getRAMCapacity(); // MB to KB conversion
+			if (RAM.getCurrentUsage() < scPanel.getRAMCapacity()){
+				RAM.CAPACITY = scPanel.getRAMCapacity(); // MB to KB conversion
+				simPanel.updateDiagnostics();
+				System.out.println("Changing RAM size to " + RAM.CAPACITY + " kb");				
+			} else {
+				System.out.println("Too many processes to accomodate change in RAM");
+			}
 		}
 	}
 	

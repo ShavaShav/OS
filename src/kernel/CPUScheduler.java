@@ -105,7 +105,7 @@ public class CPUScheduler extends Observable{
 					System.out.println("\n*** PID " + process.getPID() + " is terminating! ***");
 				}	
 				sendProcessToObservers(process); // send to gui so it can update panel(s)
-				
+
 				// move process to IO queue if it's not terminated (since it received interupt)
 				// since non-preemptive kernel, processes are only WAITING if they request resources
 				if (process.getState() != State.TERMINATED){
@@ -114,6 +114,7 @@ public class CPUScheduler extends Observable{
 				
 				// get the next process from ready queue and assign it to the CPU
 				try {
+					while (readyQueue.isEmpty()) Thread.sleep(500); // give queue time to show process
 					Process nextProcess = readyQueue.next();
 					System.out.println("\n<-> Switching in: " + nextProcess);
 					nextProcess.setState(State.RUNNING);

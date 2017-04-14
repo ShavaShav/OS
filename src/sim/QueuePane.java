@@ -5,8 +5,10 @@ import java.awt.BorderLayout;
 import javax.swing.border.LineBorder;
 
 import kernel.Process;
+import structures.IODevice;
 import structures.ProcessQueue;
 import structures.Schedule;
+import structures.State;
 
 import java.awt.Font;
 import javax.swing.JScrollPane;
@@ -16,6 +18,7 @@ import javax.swing.JProgressBar;
 import java.awt.Color;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
@@ -24,6 +27,7 @@ public class QueuePane extends JPanel implements Observer{
 	private static final long serialVersionUID = -8290089352246145892L;
 	private volatile JScrollPane scrollPane;
 	private JLabel lblsched;
+
 	/**
 	 * Create the panel.
 	 */
@@ -76,7 +80,7 @@ public class QueuePane extends JPanel implements Observer{
 		GridBagLayout gb = new GridBagLayout();
 		gb.columnWidths = new int[]{325, 0};
 		gb.rowHeights = new int[] {0};
-		gb.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gb.columnWeights = new double[]{1.0};
 		gb.rowWeights = new double[]{0.0};
 		queueGrid.setLayout(gb);
 
@@ -117,19 +121,52 @@ public class QueuePane extends JPanel implements Observer{
 			else
 				processPanel.setBackground(new Color(188, 232, 255));
 			
-			JLabel lblProcess = new JLabel(process.toString());
-			lblProcess.setFont(new Font("Verdana", Font.PLAIN, 13));
+			JLabel lblProcess = new JLabel(String.format("%-7s", "PID " + process.getPID()));
+			lblProcess.setFont(new Font("Verdana", Font.BOLD, 13));
 			processPanel.add(lblProcess);
+			
+			JLabel lblSize = new JLabel(String.format("%-9s", process.getSize() + "kb"));
+			lblSize.setFont(new Font("Verdana", Font.PLAIN, 13));
+			processPanel.add(lblSize);
 			
 			JProgressBar progressBar = new JProgressBar();
 			progressBar.setFont(new Font("Verdana", Font.PLAIN, 11));
 			progressBar.setStringPainted(true);
-			progressBar.setString(process.getTicksRemaining() + " / " + process.getTotalTicks() + " ticks");
+			progressBar.setString(process.getTicksRemaining() + " / " + process.getTotalTicks() + " ticks left");
 			progressBar.setValue(process.getPercentageDone());
 			progressBar.setForeground(new Color(74, 145, 68));
 			processPanel.add(progressBar);
+
+			JLabel lblState = new JLabel(State.getName(process.getState()));
+			lblState.setFont(new Font("Verdana", Font.ITALIC, 13));
+			processPanel.add(lblState);
+			
+			if (process.getState() == State.RUNNING){
+				JLabel lblResourceTitle = new JLabel(String.format("%25s", "Resources Required: "));
+				lblResourceTitle.setFont(new Font("Verdana", Font.BOLD, 13));
+				processPanel.add(lblResourceTitle);
+				ArrayList<IODevice> resources = process.getResources();
+				if (resources.isEmpty()){
+					JLabel lblResource = new JLabel("None, bursting to end!");
+					lblResource.setFont(new Font("Verdana", Font.PLAIN, 13));
+					processPanel.add(lblResource);
+				} else {
+					for (int i = 0; i < resources.size(); i++){
+						IODevice resource = resources.get(i);
+						JLabel lblResource;
+						if (i == 0)
+							lblResource = new JLabel(resource.getName());
+						else 
+							lblResource = new JLabel(", " + resource.getName());
+						
+						lblResource.setFont(new Font("Verdana", Font.PLAIN, 13));
+						processPanel.add(lblResource);
+					}					
+				}
+			}
 		}
 		processPanel.setAlignmentY(CENTER_ALIGNMENT);
+		processPanel.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
 		return processPanel;
 	}
 	

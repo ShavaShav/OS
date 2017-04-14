@@ -16,9 +16,9 @@ import kernel.Process;
  */
 
 public abstract class IODevice extends Observable implements Runnable {
-	public static double FAST_SPEED = 2.5; // seconds it takes to complete request
-	public static double MEDIUM_SPEED = 3.5;
-	public static double SLOW_SPEED = 5;
+	public static double FAST_SPEED = 2; // seconds it takes to complete request
+	public static double MEDIUM_SPEED = 4;
+	public static double SLOW_SPEED = 7;
 	private static int numResources = 0;
 	
 	private Random random;

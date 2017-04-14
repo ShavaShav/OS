@@ -85,7 +85,7 @@ public class NewProcessPanel extends JPanel {
 		add(panelSize, gbc_panelSize);
 		panelSize.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblSize = new JLabel("Size:");
+		JLabel lblSize = new JLabel("Size (kb):");
 		panelSize.add(lblSize, BorderLayout.NORTH);
 		
 		textFieldSize = new JTextField();
@@ -213,7 +213,7 @@ public class NewProcessPanel extends JPanel {
 	
 	
 	private void randomize(){
-		textFieldSize.setText(String.valueOf((int)(Math.random() * (RAM.CAPACITY/100)))); // random size less than 100th of ram
+		textFieldSize.setText(String.valueOf((int)(Math.random() * (RAM.CAPACITY/10)))); // random size less than 10th of ram
 		comboBoxPriority.setSelectedIndex((int) Math.round(Math.random())); // 0 ro 1 
 		for (JCheckBox chckbxResource : chckbxResources){
 			if (Math.random() > 0.5) // 50/50 shot of resource being needed

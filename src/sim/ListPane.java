@@ -2,10 +2,10 @@ package sim;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -19,8 +19,7 @@ public class ListPane extends JPanel {
 	private JScrollPane scrollPane;
 	private JLabel lblsched;
 	private JPanel queueGrid;
-	
-	private static int procRow = 0;
+
 	/**
 	 * Create the panel.
 	 */
@@ -40,12 +39,7 @@ public class ListPane extends JPanel {
 		
 		// set up grid
 		queueGrid = new JPanel();
-		GridBagLayout gb = new GridBagLayout();
-		gb.columnWidths = new int[]{325, 0};
-		gb.rowHeights = new int[] {0};
-		gb.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-		gb.rowWeights = new double[]{0.0};
-		queueGrid.setLayout(gb);
+		queueGrid.setLayout(new BoxLayout(queueGrid, BoxLayout.Y_AXIS));
 		
 		scrollPane = new JScrollPane(queueGrid);
 
@@ -57,15 +51,10 @@ public class ListPane extends JPanel {
 	}
 
 	public void addToList(Process process){
-		// go through processes, add to grid column wise
+		// add to grid column wise
 		JPanel processPanel = QueuePane.generateProcessBox(process);
-		GridBagConstraints gbc_processPanel = new GridBagConstraints();
-		gbc_processPanel.anchor = GridBagConstraints.NORTHWEST;
-		gbc_processPanel.fill = GridBagConstraints.HORIZONTAL;
-		gbc_processPanel.gridx = 0;
-		gbc_processPanel.gridy = procRow++;
-		gbc_processPanel.weighty = 0;
-		queueGrid.add(processPanel, gbc_processPanel);
+		processPanel.setMaximumSize( new Dimension(Integer.MAX_VALUE, processPanel.getPreferredSize().height));
+		queueGrid.add(processPanel);
 	}
 
 }
