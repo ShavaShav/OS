@@ -11,11 +11,15 @@ import structures.Schedule;
 
 public class SimulationUI {
 	public static final boolean DETAILS = true;
-	public static final int NUM_PROCESSES = 2, 
-			MAX_TICKS = 100000,
+	public static final int NUM_PROCESSES = 10, 
+			MAX_TICKS = 10000,
 			SCHEDULE = Schedule.FCFS;
 	
 	public static void startSimulation(){
+		IODevice.FAST_SPEED = 0.5;
+		IODevice.MEDIUM_SPEED = 1;
+		IODevice.SLOW_SPEED = 2;
+		
 		ArrayList<Process> initialProcesses = new ArrayList<Process>();
 		
 		// calculate the maxTicks
@@ -27,7 +31,7 @@ public class SimulationUI {
 			// creating a bunch of random processes
 			int totalTicks = random.nextInt(MAX_TICKS); // random amount of ticks less than the max
 			System.out.println(totalTicks);
-			int size = totalTicks * 100; // making the size (kb) a function of the amount of ticks
+			int size = totalTicks; // making the size (kb) a function of the amount of ticks
 			
 			initialProcesses.add(new Process(
 				size,    		// KB size 

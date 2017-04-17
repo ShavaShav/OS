@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 
 import kernel.CPUScheduler;
 import kernel.Process;
+import machine.CPU;
 import machine.Config;
 import machine.RAM;
 import structures.State;
@@ -33,12 +34,14 @@ public class SimPanel extends JPanel implements Observer {
 	JPanel panelCPULight;
 	private ListPane panelTerminated;
 	private JProgressBar progressRAM;
-	private JPanel panelIOQueue1;
-	private JPanel panelIOQueue2;
-	private JPanel panelIOQueue4;
-	private JPanel panelIOQueue3;
+	private QueuePane panelIOQueue1;
+	private QueuePane panelIOQueue2;
+	private QueuePane panelIOQueue4;
+	private QueuePane panelIOQueue3;
 	private Timer cpuTimer;
 	private int PANE_HEIGHT = 400, RUNNING_WIDTH = 350, RUNNING_HEIGHT = 100;
+	
+	private CPU cpu = CPU.getInstance();
 	
 	/**
 	 * Create the panel.
@@ -246,6 +249,11 @@ public class SimPanel extends JPanel implements Observer {
 						// so it draws the process back in after.
 					}
 					panelRunning.remove(panelRunningProcessBox);
+					panelRunningProcessBox = new JPanel();
+					panelRunningProcessBox.setPreferredSize(new Dimension(RUNNING_WIDTH, RUNNING_HEIGHT));
+					panelRunning.add(panelRunningProcessBox, BorderLayout.CENTER);
+					panelRunning.revalidate();
+					panelRunning.repaint();
 					panelCPULight.setBackground(new Color(204, 153, 153)); // light-red
 				}
 				
@@ -266,20 +274,37 @@ public class SimPanel extends JPanel implements Observer {
 		progressRAM.setString(RAM.getCurrentUsage()/1000 + " / " + RAM.CAPACITY/1000 + " MB");
 	}
 	
+	// should have named these better
+	public void updateIOPercentages(){
+		panelIOQueue1.updateProgressBar(Config.RESOURCES[2].getPercentageDone());
+		panelIOQueue2.updateProgressBar(Config.RESOURCES[3].getPercentageDone());
+		panelIOQueue3.updateProgressBar(Config.RESOURCES[0].getPercentageDone());
+		panelIOQueue4.updateProgressBar(Config.RESOURCES[1].getPercentageDone());
+	}
+	
 	// this refreshes the CPU panel to show progress made in real time, every half second
 	private class UpdateCPUWorkBar extends TimerTask {
 		private Process process;
+		private JLabel burstLabel;
+		
 		public UpdateCPUWorkBar(Process process){
 			this.process = process;
+			burstLabel = new JLabel();
+			burstLabel.setFont(new Font("Verdana", Font.BOLD, 12));
+			burstLabel.setForeground(Color.RED);
 		}
 	    public void run() {
 	    	// update the progress bar
 			panelRunning.remove(panelRunningProcessBox);
 			panelRunningProcessBox = QueuePane.generateProcessBox(process);
 			panelRunningProcessBox.setPreferredSize(new Dimension(RUNNING_WIDTH, RUNNING_HEIGHT));
+			int ticks = cpu.getCurrentBurstTicks();
+			burstLabel.setText("Bursting for " + ticks/(double)Config.CPU_UPDATE_SPEED + " seconds (" + ticks + " ticks)");
+			panelRunningProcessBox.add(burstLabel);
 			panelRunning.add(panelRunningProcessBox, BorderLayout.CENTER);
 			panelRunning.revalidate();
 			panelRunning.repaint();
+			updateIOPercentages();
 	    }
 	  }
 }

@@ -27,12 +27,15 @@ public class QueuePane extends JPanel implements Observer{
 	private static final long serialVersionUID = -8290089352246145892L;
 	private volatile JScrollPane scrollPane;
 	private JLabel lblsched;
+	private JProgressBar progressBar;
+	private ProcessQueue queue;
 
 	/**
 	 * Create the panel.
 	 */
 	public QueuePane(ProcessQueue queue, String title) {
-		queue.addObserver(this);
+		this.queue = queue;
+		this.queue.addObserver(this);
 		setLayout(new BorderLayout(0, 0));
 		setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
 		
@@ -45,7 +48,12 @@ public class QueuePane extends JPanel implements Observer{
 		
 		lblsched = new JLabel(Schedule.getName(queue.getSchedule()));
 		lblsched.setFont(new Font("Verdana", Font.PLAIN, 11));
-		titlePanel.add(lblsched);
+		titlePanel.add(lblsched);			
+
+		if (!title.contains("Ready")){ // ready queues are always ready :P
+			progressBar = new JProgressBar();
+			titlePanel.add(progressBar);
+		}
 		
 		JPanel queueGrid = generateQueueGrid(queue);
 		
@@ -68,6 +76,10 @@ public class QueuePane extends JPanel implements Observer{
 	
 	public void setScheduleText(String scheduleName){
 		lblsched.setText(scheduleName);
+	}
+	
+	public void updateProgressBar(int percentage){
+		progressBar.setValue(percentage);
 	}
 
 	// This method is sort of inefficient, as it generates the whole list

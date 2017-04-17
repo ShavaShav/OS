@@ -18,6 +18,7 @@ public class CPU extends Observable {
 	private static final CPU instance = new CPU();
 	private static ExecutorService core = Executors.newSingleThreadExecutor();
 	private static Process currentProcess;
+	private static int burstTicks;
 
 	// only allow one CPU to be instantiated
 	private CPU(){};	
@@ -47,6 +48,10 @@ public class CPU extends Observable {
 		return currentProcess;
 	}
 	
+	public int getCurrentBurstTicks() {
+		return burstTicks > 0 ? burstTicks : 0;
+	}
+	
 	// run current process on the CPU (in a separate thread)
  	// using's Executor's single thread service to ensure CPU cannot
  	// call execute more than once simultaneously (a.k.a 1 core)
@@ -64,12 +69,13 @@ public class CPU extends Observable {
  	// (CPU_UPDATE_SPEED) so that GUI can update progress bar in real time
  	private void doWork() {
  		try {
- 			int randomBurst = currentProcess.getRandomBurst();
+ 			burstTicks = currentProcess.getRandomBurst(); // generate a random cpu burst tick amount
+ 			int relativeClockSpeed = CLOCK_SPEED/(1000/Config.CPU_UPDATE_SPEED); 
  			do {
- 				currentProcess.advanceIP(Config.CPU_UPDATE_SPEED);
- 				randomBurst -= Config.CPU_UPDATE_SPEED;
- 				Thread.sleep(Config.CPU_UPDATE_SPEED);
- 			} while (randomBurst > 0);
+ 				int ticksAdvanced = currentProcess.advanceIP(relativeClockSpeed);
+ 				burstTicks -= ticksAdvanced;
+ 				Thread.sleep(Config.CPU_UPDATE_SPEED > ticksAdvanced ? Config.CPU_UPDATE_SPEED : ticksAdvanced); // sleep for half sec, or less if required
+ 			} while (burstTicks > 0 && currentProcess.getTicksRemaining() > 0);
  			// simulate an i/o or syscall - return control to kernel
  			this.interrupt();
  		} catch (InterruptedException e) {

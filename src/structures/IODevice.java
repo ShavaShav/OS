@@ -4,6 +4,7 @@ import java.util.Observable;
 import java.util.Random;
 
 import kernel.Process;
+import machine.Config;
 
 /*
  *  Our resources can only be instantiated once, so subclasses must
@@ -16,11 +17,11 @@ import kernel.Process;
  */
 
 public abstract class IODevice extends Observable implements Runnable {
-	public static double FAST_SPEED = 2; // seconds it takes to complete request
-	public static double MEDIUM_SPEED = 4;
-	public static double SLOW_SPEED = 7;
+	public static double FAST_SPEED = 2.5; // seconds it takes to complete request
+	public static double MEDIUM_SPEED = 5.0;
+	public static double SLOW_SPEED = 10.0;
 	private static int numResources = 0;
-	
+	private int currentTimeLeft, currentTotalTime;
 	private Random random;
 	private boolean isRunning = false;
 	
@@ -71,10 +72,20 @@ public abstract class IODevice extends Observable implements Runnable {
 	// by sleeping for a random time close to the "speed") 
 	private void serveIORequest() throws InterruptedException{
 		// select random amount of seconds using gaussian dist
-		double time = random.nextGaussian() * (speed/8) + speed;
+		double time = random.nextGaussian() * (speed/4) + speed;
 		time = time > 0.50 ? time : 0.50; // cap the lower bound at half a second
-		long randTime = (long) (time * 1000);
-		Thread.sleep(randTime);
+		currentTimeLeft = (int) (time * 1000);
+		currentTotalTime = currentTimeLeft;
+		do {
+			int timeAdvanced = Config.CPU_UPDATE_SPEED;
+			currentTimeLeft -= timeAdvanced;
+			Thread.sleep(Config.CPU_UPDATE_SPEED > timeAdvanced ? Config.CPU_UPDATE_SPEED : timeAdvanced); // sleep for half sec, or less if required
+		} while (currentTimeLeft > 0);
+	}
+	
+	// used by GUI to show IO completion percentage
+	public int getPercentageDone() {
+		return (int) (currentTimeLeft/(double)currentTotalTime * 100);
 	}
 	
 	// runs in a separate thread due to busy waiting (while looping)
